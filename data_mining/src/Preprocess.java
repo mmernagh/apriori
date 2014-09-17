@@ -15,9 +15,9 @@ public class Preprocess {
 
   private static final String pathToArticles = "/home/0/srini/WWW/674/public/reuters";
 
-  private static Set<ArticleData> articleDataSet;
-  private static Map<String, Integer> wordFrequencies;
-
+  private static Map<String, Integer> combineWordFrequencies(Set<ArticleData> articleDataSet) {
+    return null;
+  }
   /**
    * Reads and parses the reuters articles, outputting feature vector representations of each.
    *
@@ -25,22 +25,18 @@ public class Preprocess {
    */
   public static void main(String[] args) {
 
-    articleDataSet = new HashSet<ArticleData>();
-    wordFrequencies = new HashMap<String, Integer>();
+    Set<ArticleData> articleDataSet = new HashSet<ArticleData>();
 
     // Parse all the files in the given directory
     try {
       Files.walkFileTree(Paths.get(pathToArticles),new HashSet<FileVisitOption>() /* no file options */, 1 /* depth */,
-          new ParsingFileVisitor(articleDataSet, wordFrequencies));
+          new ParsingFileVisitor(articleDataSet));
     } catch (IOException e) {
       e.printStackTrace();
     }
 
-    for (ArticleData data : articleDataSet) {
-      for (String place : data.getPlaces()) {
-        System.out.println(place);
-      }
-    }
+    Map<String, Integer> wordFrequencies = combineWordFrequencies(articleDataSet);
+
   }
 
 }

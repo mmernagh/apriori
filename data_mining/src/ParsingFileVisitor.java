@@ -24,11 +24,9 @@ public class ParsingFileVisitor extends SimpleFileVisitor<Path> {
   private static final String westernEuropean = "ISO-8859-1";
 
   private Set<ArticleData> articlesData;
-  private Map<String, Integer> combinedWordFrequencies;
 
-  public ParsingFileVisitor(Set<ArticleData> articlesData, Map<String, Integer> combinedWordFrequencies) {
+  public ParsingFileVisitor(Set<ArticleData> articlesData) {
     this.articlesData = articlesData;
-    this.combinedWordFrequencies = combinedWordFrequencies;
   }
 
   @Override
@@ -47,11 +45,6 @@ public class ParsingFileVisitor extends SimpleFileVisitor<Path> {
       } else {
         encoding = utf8;
       }
-
-      // debug
-      ArticleData articleData = new ArticleData();
-      articleData.addPlace(file.getFileName().toString());
-      articlesData.add(articleData);
 
       // Parse articles
       try {
