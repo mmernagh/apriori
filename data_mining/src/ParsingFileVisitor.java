@@ -10,7 +10,6 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Enumeration;
-import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
@@ -23,10 +22,10 @@ public class ParsingFileVisitor extends SimpleFileVisitor<Path> {
   private static final String utf8 = "UTF-8";
   private static final String westernEuropean = "ISO-8859-1";
 
-  private Set<ArticleData> articlesData;
+  private static Set<ArticleData> articlesData;
 
   public ParsingFileVisitor(Set<ArticleData> articlesData) {
-    this.articlesData = articlesData;
+    ParsingFileVisitor.articlesData = articlesData;
   }
 
   @Override
@@ -83,7 +82,7 @@ public class ParsingFileVisitor extends SimpleFileVisitor<Path> {
     try {
       SAXParser saxParser = spf.newSAXParser();
       XMLReader xmlReader = saxParser.getXMLReader();
-      xmlReader.setContentHandler(new XMLParser(xmlReader));
+      xmlReader.setContentHandler(new XMLParser(xmlReader, articlesData));
       xmlReader.parse(inputSource);
     } catch (Exception e) {
       e.printStackTrace();

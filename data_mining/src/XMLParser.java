@@ -5,6 +5,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Set;
 
 /**
  * An XMLParser parses a given valid XML document and outputs corresponding feature vector based on the relevant tags
@@ -14,14 +15,35 @@ import java.util.Hashtable;
  */
 public class XMLParser extends DefaultHandler {
 
+  /**
+   * This enum lists the recognized tags that will be parsed. Any other tags will be ignored.
+   */
+  private enum Tag {
+    MERMAID ("MERMAID"), REUTERS ("REUTERS"), PLACES ("PLACES"), TOPICS ("TOPICS"), TEXT ("TEXT"), BODY("BODY");
+
+    private final String value;
+
+    Tag(String value) {
+      this.value = value;
+    }
+
+    @Override
+    public String toString() {
+      return value;
+    }
+  }
+
   // Sample code
   private Hashtable<String, Integer> tags;
+  private Set<ArticleData> articleDataSet;
+  private ArticleData articleData;
 
   // Used to create a temporary IgnoreContentHandler when needed.
   private XMLReader xmlReader;
 
-  public XMLParser(XMLReader xmlReader) {
+  public XMLParser(XMLReader xmlReader, Set<ArticleData> articleDataSet) {
     this.xmlReader = xmlReader;
+    this.articleDataSet = articleDataSet;
   }
 
   @Override
@@ -45,22 +67,46 @@ public class XMLParser extends DefaultHandler {
   @Override
   public void startElement(String namespaceURI, String localName, String qName, Attributes atts) throws SAXException {
 
-    // Example handler for tags to ignore.
-    if (qName.equals("UNKNOWN")) {
+    // Compare qName to recognized Tags.
+    Tag tag = null;
+    try {
+      tag = Enum.valueOf(Tag.class, qName);
+    } catch (IllegalArgumentException e) {
+      // If qName is not a recognized tag.
       xmlReader.setContentHandler(new IgnoreContentHandler(xmlReader, this));
+    } catch (NullPointerException e) {
+      e.printStackTrace();
     }
 
-    // Sample code that keeps track of each tag
-    String key = qName;
-    Object value = tags.get(key);
-
-    if (value == null) {
-      tags.put(key, new Integer(1));
+    switch (tag) {
+      case MERMAID:
+      case TEXT:
+        // Continue parsing within MERMAID and TEXT
+        break;
+      case REUTERS:
+        articleData = new ArticleData();
+        break;
+      case PLACES:
+        // TODO(kfritschie): create a new content handler and pass it articleData.getPlaces
+        break;
+      case TOPICS:
+        // TODO(kfritschie): create a new content handler and pass it articleData.getTopics
+        break;
+      case BODY:
+        // TODO(mernagh): parse body
+        break;
+      default:
+        xmlReader.setContentHandler(new IgnoreContentHandler(xmlReader, this));
     }
-    else {
-      int count = ((Integer)value).intValue();
-      count++;
-      tags.put(key, new Integer(count));
+  }
+
+  @Override
+  public void endElement(String namespaceURI, String localName, String qName) {
+    if (qName.equals(Tag.REUTERS.toString())) {
+      // Add articleData if it contains any body terms.
+      if (articleData != null && articleData.getWordFrequencies().size() > 0) {
+        articleDataSet.add(articleData);
+      }
     }
   }
 }

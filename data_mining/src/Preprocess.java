@@ -6,7 +6,6 @@ import java.util.*;
  * Preprocesses reuters articles in .sgm files in the local directory, creating feature vectors for each.
  * The feature vectors are composed of the words in the xml tags and a frequency list of the top XX rare words
  * in the document body.
- * // TODO(mernagh) consider adding td-idf.
  */
 public class Preprocess {
 
@@ -64,7 +63,6 @@ public class Preprocess {
 
     // A tree map of words and scores. A custom comparator ensures that duplicate scores don't get overwritten.
     TreeMap<Double, String> map = new TreeMap<Double, String>(new Comparator<Double>() {
-      @Override
       public int compare(Double a, Double b) {
         if (Double.compare(a, b) >= 0 ) {
           return -1;

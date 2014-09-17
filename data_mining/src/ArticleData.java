@@ -15,7 +15,6 @@ public class ArticleData {
    */
   private class EntryComparator implements Comparator<Map.Entry<String, Integer>> {
 
-    @Override
     public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
       if (o1 == o2) {
         return 0;
