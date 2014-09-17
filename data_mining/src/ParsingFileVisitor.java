@@ -38,7 +38,7 @@ public class ParsingFileVisitor extends SimpleFileVisitor<Path> {
         encoding = utf8;
       }
 
-      System.out.println(file.getFileName().toString() + ": " + encoding);
+      // Parse articles
       try {
         parseFeatureVectors(file.toFile(), encoding);
       } catch (FileNotFoundException e) {
