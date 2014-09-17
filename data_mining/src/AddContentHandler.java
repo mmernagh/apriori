@@ -22,7 +22,6 @@ public class AddContentHandler extends DefaultHandler{
         this.toPlStrSet = topPlStrSet;
     }
     @Override public void characters(char ch[], int start, int length){
-
     toPlStrSet.add(new String(ch, start, length));
     }
 
