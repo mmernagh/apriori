@@ -5,6 +5,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Set;
 
 /**
  * An XMLParser parses a given valid XML document and outputs corresponding feature vector based on the relevant tags
@@ -34,13 +35,15 @@ public class XMLParser extends DefaultHandler {
 
   // Sample code
   private Hashtable<String, Integer> tags;
+  private Set<ArticleData> articleDataSet;
   private ArticleData articleData;
 
   // Used to create a temporary IgnoreContentHandler when needed.
   private XMLReader xmlReader;
 
-  public XMLParser(XMLReader xmlReader) {
+  public XMLParser(XMLReader xmlReader, Set<ArticleData> articleDataSet) {
     this.xmlReader = xmlReader;
+    this.articleDataSet = articleDataSet;
   }
 
   @Override
@@ -94,6 +97,14 @@ public class XMLParser extends DefaultHandler {
         break;
       default:
         xmlReader.setContentHandler(new IgnoreContentHandler(xmlReader, this));
+    }
+  }
+
+  @Override
+  public void endElement(String namespaceURI, String localName, String qName) {
+    // Add articleData if it contains any body terms.
+    if (articleData != null && articleData.getWordFrequencies().size() > 0) {
+      articleDataSet.add(articleData);
     }
   }
 }
