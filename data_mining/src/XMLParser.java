@@ -1,4 +1,5 @@
 import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
@@ -91,9 +92,13 @@ public class XMLParser extends DefaultHandler {
         break;
       case PLACES:
         // TODO(kfritschie): create a new content handler and pass it articleData.getPlaces
-        break;
+          AddContentHandler addPlaceHandler = new AddContentHandler(xmlReader, xmlReader.getContentHandler() , articleData.getPlaces());
+            xmlReader.setContentHandler(addPlaceHandler);
+          break;
       case TOPICS:
         // TODO(kfritschie): create a new content handler and pass it articleData.getTopics
+          AddContentHandler addTopicHandler = new AddContentHandler(xmlReader, xmlReader.getContentHandler(), articleData.getTopics());
+          xmlReader.setContentHandler(addTopicHandler);
         break;
       case BODY:
         // TODO: add lucene parsing to body.
