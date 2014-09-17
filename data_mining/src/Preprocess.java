@@ -15,8 +15,27 @@ public class Preprocess {
 
   private static final String pathToArticles = "/home/0/srini/WWW/674/public/reuters";
 
-  private static Map<String, Integer> combineWordFrequencies(Set<ArticleData> articleDataSet) {
-    return null;
+  /**
+   * Combines all the word frequencies of ArticleData into a single combined frequency map.
+   *
+   * @param articleDataSet The ArticleData
+   * @return The combined word frequency map.
+   */
+  private static Map<String, Integer> combineWordFrequencies(final Set<ArticleData> articleDataSet) {
+    Map<String, Integer> map = new HashMap<String, Integer>();
+
+    for (ArticleData data : articleDataSet) {
+      for (Map.Entry<String, Integer> entry : data.getWordFrequencies().entrySet()) {
+        String key = entry.getKey();
+        if (map.containsKey(key)) {
+          map.put(key, map.get(key) + entry.getValue());
+        } else {
+          map.put(key, entry.getValue());
+        }
+      }
+    }
+
+    return map;
   }
   /**
    * Reads and parses the reuters articles, outputting feature vector representations of each.
@@ -36,7 +55,6 @@ public class Preprocess {
     }
 
     Map<String, Integer> wordFrequencies = combineWordFrequencies(articleDataSet);
-
   }
 
 }

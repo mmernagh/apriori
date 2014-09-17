@@ -78,6 +78,10 @@ public class ArticleData {
     return topics;
   }
 
+  public Map<String, Integer> getWordFrequencies() {
+    return wordFrequencies;
+  }
+
   public Queue<Map.Entry<String, Integer>> getSortedWordFrequencies() {
     sort();
     return sortedWordFrequencies;
