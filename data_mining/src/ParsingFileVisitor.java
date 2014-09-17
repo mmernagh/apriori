@@ -18,6 +18,8 @@ import java.util.Vector;
 public class ParsingFileVisitor extends SimpleFileVisitor<Path> {
 
   private static final String fileExtension = ".sgm";
+  private static final String utf8 = "UTF-8";
+  private static final String westernEuropean = "ISO-8859-1";
 
   @Override
   public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
@@ -27,8 +29,18 @@ public class ParsingFileVisitor extends SimpleFileVisitor<Path> {
   @Override
   public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
     if (attrs.isRegularFile() && file.getFileName().toString().endsWith(fileExtension)) {
+
+      // Handle weird encoding discrepancy in file "reut2-017.sgm
+      String encoding;
+      if (file.getFileName().toString().endsWith("017.sgm")) {
+        encoding = westernEuropean;
+      } else {
+        encoding = utf8;
+      }
+
+      System.out.println(file.getFileName().toString() + ": " + encoding);
       try {
-        parseFeatureVectors(file.toFile());
+        parseFeatureVectors(file.toFile(), encoding);
       } catch (FileNotFoundException e) {
         e.printStackTrace();
       }
@@ -52,9 +64,9 @@ public class ParsingFileVisitor extends SimpleFileVisitor<Path> {
    *
    * @param file The given file.
    */
-  private static void parseFeatureVectors(File file) throws FileNotFoundException {
+  private static void parseFeatureVectors(File file, String encoding) throws FileNotFoundException {
 
-    InputSource inputSource = wrapFile(file);
+    InputSource inputSource = wrapFile(file, encoding);
 
     // Get an XMLReader.
     SAXParserFactory spf = SAXParserFactory.newInstance();
@@ -83,10 +95,10 @@ public class ParsingFileVisitor extends SimpleFileVisitor<Path> {
    * @param file The file.
    * @return The InputSource
    */
-  private static InputSource wrapFile(File file) throws FileNotFoundException {
+  private static InputSource wrapFile(File file, String encoding) throws FileNotFoundException {
 
     // Add the xml version, and a top-level element (so the document is a well-formed XML Document)
-    String appendToTop = "<?xml version=\"1.1\"?>\n<MERMAID>";
+    String appendToTop = "<?xml version=\"1.1\" encoding = \"" + encoding + "\"?>\n<MERMAID>";
     String appendToEnd = "</MERMAID>";
 
     InputStream fileInputStream = new FileInputStream(file);
