@@ -1,9 +1,6 @@
 import java.io.*;
 import java.nio.file.*;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Preprocesses reuters articles in .sgm files in the local directory, creating feature vectors for each.
@@ -13,6 +10,7 @@ import java.util.Set;
  */
 public class Preprocess {
 
+  private static final int numberOfBodyWordsInFeatureVector = 5;
   private static final String pathToArticles = "/home/0/srini/WWW/674/public/reuters";
 
   /**
@@ -53,6 +51,67 @@ public class Preprocess {
     return localWordFrequency.getValue()
         * Math.log((double) numberOfDocs / combinedWordFrequencies.get(localWordFrequency.getKey()));
   }
+
+  /**
+   * Generates the feature vector (using tf-idf) for a given {@link ArticleData}, pretty prints the feature vector
+   * to stdout, in the form "fv<term=rank term=rank ...><place1 place2><topic1 topic2>".
+   *
+   * @param articleData The article data.
+   * @param wordFrequency The combined word frequency map.
+   * @param numDocs The total number of documents.
+   */
+  private static void generateFeatureVector(ArticleData articleData, Map<String, Integer> wordFrequency, int numDocs) {
+
+    // A tree map of words and scores. A custom comparator ensures that duplicate scores don't get overwritten.
+    TreeMap<Double, String> map = new TreeMap<Double, String>(new Comparator<Double>() {
+      @Override
+      public int compare(Double a, Double b) {
+        if (Double.compare(a, b) >= 0 ) {
+          return -1;
+        } else {
+          return 1;
+        }
+      }
+    });
+
+    Queue<Map.Entry<String, Integer>> sortedWordFrequencies = articleData.getSortedWordFrequencies();
+
+    // Get initial word scores.
+    for (int i = 0; i < numberOfBodyWordsInFeatureVector; ++i) {
+      if (sortedWordFrequencies.peek() != null) {
+        Map.Entry<String, Integer> entry = sortedWordFrequencies.poll();
+        double score = getWordScore(entry, numDocs, wordFrequency);
+        map.put(score, entry.getKey());
+      }
+    }
+
+    // Add more words if their scores are higher than the lowest score, until a word is found whose score is not
+    // higher than the lowest score.
+    Map.Entry<String, Integer> nextEntry = sortedWordFrequencies.poll();
+
+    while (nextEntry != null && Double.compare(map.lastKey(), getWordScore(nextEntry, numDocs, wordFrequency)) < 0) {
+      map.remove(map.lastKey());
+      map.put(getWordScore(nextEntry, numDocs, wordFrequency), nextEntry.getKey());
+      nextEntry = sortedWordFrequencies.poll();
+    }
+
+    // Print feature vector
+    System.out.print("<");
+    for (Map.Entry<Double, String> entry : map.entrySet()) {
+      System.out.print(" " + entry.getValue() + "=" + entry.getKey());
+    }
+    System.out.print("><");
+    for (String place : articleData.getPlaces()) {
+      System.out.print(" " + place);
+    }
+    System.out.print("><");
+    for (String topic : articleData.getTopics()) {
+      System.out.print(" " + topic);
+    }
+    System.out.println(">");
+  }
+
+
   /**
    * Reads and parses the reuters articles, outputting feature vector representations of each.
    *
@@ -71,7 +130,9 @@ public class Preprocess {
     }
 
     Map<String, Integer> wordFrequencies = generateWordFrequencies(articleDataSet);
-
+    for (ArticleData articleData : articleDataSet) {
+      generateFeatureVector(articleData, wordFrequencies, articleDataSet.size());
+    }
   }
 
 }
