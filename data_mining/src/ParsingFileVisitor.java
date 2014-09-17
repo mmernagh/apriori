@@ -10,6 +10,8 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Enumeration;
+import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 /**
@@ -20,6 +22,14 @@ public class ParsingFileVisitor extends SimpleFileVisitor<Path> {
   private static final String fileExtension = ".sgm";
   private static final String utf8 = "UTF-8";
   private static final String westernEuropean = "ISO-8859-1";
+
+  private Set<ArticleData> articlesData;
+  private Map<String, Integer> combinedWordFrequencies;
+
+  public ParsingFileVisitor(Set<ArticleData> articlesData, Map<String, Integer> combinedWordFrequencies) {
+    this.articlesData = articlesData;
+    this.combinedWordFrequencies = combinedWordFrequencies;
+  }
 
   @Override
   public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
@@ -37,6 +47,11 @@ public class ParsingFileVisitor extends SimpleFileVisitor<Path> {
       } else {
         encoding = utf8;
       }
+
+      // debug
+      ArticleData articleData = new ArticleData();
+      articleData.addPlace(file.getFileName().toString());
+      articlesData.add(articleData);
 
       // Parse articles
       try {
