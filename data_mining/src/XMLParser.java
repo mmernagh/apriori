@@ -37,6 +37,8 @@ public class XMLParser extends DefaultHandler {
   private Hashtable<String, Integer> tags;
   private Set<ArticleData> articleDataSet;
   private ArticleData articleData;
+  private StringBuffer buffer;
+  private boolean inBody = false;
 
   // Used to create a temporary IgnoreContentHandler when needed.
   private XMLReader xmlReader;
@@ -95,21 +97,54 @@ public class XMLParser extends DefaultHandler {
         break;
       case BODY:
         // TODO: add lucene parsing to body.
+        inBody = true;
+        buffer = new StringBuffer();
         break;
       default:
         xmlReader.setContentHandler(new IgnoreContentHandler(xmlReader, this));
     }
-
-
   }
 
   @Override
   public void endElement(String namespaceURI, String localName, String qName) {
-    if (qName.equals(Tag.REUTERS.toString())) {
-      // Add articleData if it contains any body terms.
-      if (articleData != null /*&& articleData.getWordFrequencies().size() > 0*/) {
-        articleDataSet.add(articleData);
-      }
+
+    // Compare qName to recognized Tags.
+    Tag tag = null;
+    try {
+      tag = Enum.valueOf(Tag.class, qName);
+    } catch (IllegalArgumentException e) {
+      // If qName is not a recognized tag.
+      tag = Tag.UNKOWN;
+    } catch (NullPointerException e) {
+      e.printStackTrace();
     }
+
+    switch (tag) {
+      case REUTERS:
+        // Add articleData if it contains any body terms.
+        if (articleData != null && articleData.getWordFrequencies().size() > 0) {
+          articleDataSet.add(articleData);
+        }
+        break;
+      case BODY:
+        parseBodyWords();
+        inBody = false;
+        break;
+      default:
+    }
+  }
+
+  @Override
+  public void characters(char ch[], int start, int length){
+    if (inBody) {
+      buffer.append(ch, start, length);
+    }
+  }
+
+  /**
+   * Tokenizes the buffer, ignoring stop words, and adds the words to articleData.
+   */
+  private void parseBodyWords() {
+
   }
 }
