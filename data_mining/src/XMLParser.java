@@ -102,9 +102,11 @@ public class XMLParser extends DefaultHandler {
 
   @Override
   public void endElement(String namespaceURI, String localName, String qName) {
-    // Add articleData if it contains any body terms.
-    if (articleData != null && articleData.getWordFrequencies().size() > 0) {
-      articleDataSet.add(articleData);
+    if (qName.equals(Tag.REUTERS.toString())) {
+      // Add articleData if it contains any body terms.
+      if (articleData != null && articleData.getWordFrequencies().size() > 0) {
+        articleDataSet.add(articleData);
+      }
     }
   }
 }
