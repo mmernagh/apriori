@@ -16,26 +16,42 @@ public class Preprocess {
   private static final String pathToArticles = "/home/0/srini/WWW/674/public/reuters";
 
   /**
-   * Combines all the word frequencies of ArticleData into a single combined frequency map.
+   * Creates a Map<String, Integer> mapping all terms from all documents to the number of documents that each term
+   * appears in.
    *
    * @param articleDataSet The ArticleData
    * @return The combined word frequency map.
    */
-  private static Map<String, Integer> combineWordFrequencies(final Set<ArticleData> articleDataSet) {
+  private static Map<String, Integer> generateWordFrequencies(final Set<ArticleData> articleDataSet) {
     Map<String, Integer> map = new HashMap<String, Integer>();
 
     for (ArticleData data : articleDataSet) {
-      for (Map.Entry<String, Integer> entry : data.getWordFrequencies().entrySet()) {
-        String key = entry.getKey();
-        if (map.containsKey(key)) {
-          map.put(key, map.get(key) + entry.getValue());
+      for (String word : data.getWordFrequencies().keySet()) {
+        if (map.containsKey(word)) {
+          map.put(word, map.get(word) + 1);
         } else {
-          map.put(key, entry.getValue());
+          map.put(word, 1);
         }
       }
     }
 
     return map;
+  }
+
+  /**
+   * Generates a tf-idf score for a term. tf(x) = count of occurrences of the word in the document.
+   * idf(x) = log (total number of documents / number of documents that contain the term ).
+   * The tf-idf score of x is tf(x) * idf(x).
+   *
+   * @param localWordFrequency The count of the occurrences of the term in the document.
+   * @param numberOfDocs The total number of documents.
+   * @param combinedWordFrequencies A Map<String, Integer> of terms to the number of documents containing that term.
+   * @return The tf-idf score.
+   */
+  private static double getWordScore(Map.Entry<String, Integer> localWordFrequency, int numberOfDocs,
+                                     Map<String, Integer> combinedWordFrequencies) {
+    return localWordFrequency.getValue()
+        * Math.log((double) numberOfDocs / combinedWordFrequencies.get(localWordFrequency.getKey()));
   }
   /**
    * Reads and parses the reuters articles, outputting feature vector representations of each.
@@ -54,7 +70,8 @@ public class Preprocess {
       e.printStackTrace();
     }
 
-    Map<String, Integer> wordFrequencies = combineWordFrequencies(articleDataSet);
+    Map<String, Integer> wordFrequencies = generateWordFrequencies(articleDataSet);
+
   }
 
 }
