@@ -19,7 +19,7 @@ public class XMLParser extends DefaultHandler {
    * This enum lists the recognized tags that will be parsed. Any other tags will be ignored.
    */
   private enum Tag {
-    MERMAID ("MERMAID"), REUTERS ("REUTERS"), PLACES ("PLACES"), TOPICS ("TOPICS"), TEXT ("TEXT"), BODY("BODY");
+    UNKOWN ("UNKNOWN"), MERMAID ("MERMAID"), REUTERS ("REUTERS"), PLACES ("PLACES"), TOPICS ("TOPICS"), TEXT ("TEXT"), BODY("BODY");
 
     private final String value;
 
@@ -74,6 +74,7 @@ public class XMLParser extends DefaultHandler {
     } catch (IllegalArgumentException e) {
       // If qName is not a recognized tag.
       xmlReader.setContentHandler(new IgnoreContentHandler(xmlReader, this));
+      tag = Tag.UNKOWN;
     } catch (NullPointerException e) {
       e.printStackTrace();
     }
@@ -93,18 +94,20 @@ public class XMLParser extends DefaultHandler {
         // TODO(kfritschie): create a new content handler and pass it articleData.getTopics
         break;
       case BODY:
-        // TODO(mernagh): parse body
+        // TODO: add lucene parsing to body.
         break;
       default:
         xmlReader.setContentHandler(new IgnoreContentHandler(xmlReader, this));
     }
+
+
   }
 
   @Override
   public void endElement(String namespaceURI, String localName, String qName) {
     if (qName.equals(Tag.REUTERS.toString())) {
       // Add articleData if it contains any body terms.
-      if (articleData != null && articleData.getWordFrequencies().size() > 0) {
+      if (articleData != null /*&& articleData.getWordFrequencies().size() > 0*/) {
         articleDataSet.add(articleData);
       }
     }

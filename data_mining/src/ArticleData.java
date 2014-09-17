@@ -88,7 +88,11 @@ public class ArticleData {
 
   private void sort() {
     if (!isSorted) {
-      sortedWordFrequencies = new PriorityQueue<Map.Entry<String, Integer>>(wordFrequencies.size(), new EntryComparator());
+      int capacity = 1;
+      if (wordFrequencies.size() > 1) {
+        capacity = wordFrequencies.size();
+      }
+      sortedWordFrequencies = new PriorityQueue<Map.Entry<String, Integer>>(capacity, new EntryComparator());
       sortedWordFrequencies.addAll(wordFrequencies.entrySet());
       isSorted = true;
     }

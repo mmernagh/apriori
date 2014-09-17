@@ -10,7 +10,7 @@ import java.util.*;
 public class Preprocess {
 
   private static final int numberOfBodyWordsInFeatureVector = 5;
-  private static final String pathToArticles = "/home/0/srini/WWW/674/public/reuters";
+  private static final String pathToArticles = "/home/armageddon/Downloads";
 
   /**
    * Creates a Map<String, Integer> mapping all terms from all documents to the number of documents that each term
@@ -100,7 +100,7 @@ public class Preprocess {
     }
     System.out.print("><");
     for (String place : articleData.getPlaces()) {
-      System.out.print(" " + place);
+      System.out.println(" " + place);
     }
     System.out.print("><");
     for (String topic : articleData.getTopics()) {
