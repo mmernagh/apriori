@@ -1,5 +1,5 @@
-JFLAGS = -cp .
-JC = ecj
+JFLAGS = -cp lucene-core-4.10.0.jar:lucene-analyzers-common-4.10.0.jar:. 
+JC = ecj 
 JVM = java
 .SUFFIXES: .java .class
 .java.class:
@@ -7,9 +7,10 @@ JVM = java
 
 CLASSES = \
 				IgnoreContentHandler.java \
-				XMLParser.java \
-				ParsingFileVisitor.java \
         ArticleData.java \
+        AddContentHandler.java \
+				ParsingFileVisitor.java \
+				XMLParser.java \
 				Preprocess.java
 
 MAIN = Preprocess 
