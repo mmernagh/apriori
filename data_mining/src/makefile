@@ -1,4 +1,6 @@
-JFLAGS = -cp lucene-core-4.10.0.jar:lucene-analyzers-common-4.10.0.jar:. 
+# makefile for lab1 of CSE 5243
+# Author: mernagh
+JFLAGS = -cp lucene-core-4.10.0.jar:lucene-analyzers-common-4.10.0.jar:.
 JC = ecj 
 JVM = java
 OUTPUT=feature_vectors.txt

@@ -6,7 +6,9 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import java.util.Set;
 
-/**This content handler consumes without performing any processing, similar to IgnoreContentHandler
+/**
+ * AddContentHandler writes each element value that it encounters to a Set<String> that is provided.
+ *
  * Created by kfritschie on 9/17/2014.
  */
 public class AddContentHandler extends DefaultHandler{

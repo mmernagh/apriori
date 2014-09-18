@@ -1,6 +1,7 @@
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.core.LowerCaseTokenizer;
 import org.apache.lucene.analysis.core.StopFilter;
+import org.apache.lucene.analysis.en.PorterStemFilter;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.util.CharArraySet;
@@ -11,8 +12,6 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Set;
 
 /**
@@ -41,13 +40,16 @@ public class XMLParser extends DefaultHandler {
     }
   }
 
-  // Sample code
-  private Hashtable<String, Integer> tags;
   private Set<ArticleData> articleDataSet;
+
+  // The current ArticleData (may get discarded if no body text is found).
   private ArticleData articleData;
+
+  // Stores the body text.
   private StringBuffer buffer;
   private boolean inBody = false;
 
+  // Custom stop word set.
   private CharArraySet charArraySet = StandardAnalyzer.STOP_WORDS_SET;
 
   // Used to create a temporary IgnoreContentHandler when needed.
@@ -57,24 +59,6 @@ public class XMLParser extends DefaultHandler {
     this.xmlReader = xmlReader;
     this.articleDataSet = articleDataSet;
     initStopWords();
-  }
-
-  @Override
-  public void startDocument() throws SAXException {
-    tags = new Hashtable<String, Integer>();
-  }
-
-  @Override
-  public void endDocument() throws SAXException {
-
-    // Example code
-    Enumeration<String> e = tags.keys();
-    while (e.hasMoreElements()) {
-      String tag = (String)e.nextElement();
-      int count = ((Integer)tags.get(tag)).intValue();
-      System.out.println("Local Name \"" + tag + "\" occurs "
-          + count + " times");
-    }
   }
 
   @Override
@@ -101,17 +85,14 @@ public class XMLParser extends DefaultHandler {
         articleData = new ArticleData();
         break;
       case PLACES:
-        // TODO(kfritschie): create a new content handler and pass it articleData.getPlaces
-          AddContentHandler addPlaceHandler = new AddContentHandler(xmlReader, xmlReader.getContentHandler() , articleData.getPlaces());
-            xmlReader.setContentHandler(addPlaceHandler);
-          break;
+        AddContentHandler addPlaceHandler = new AddContentHandler(xmlReader, xmlReader.getContentHandler() , articleData.getPlaces());
+        xmlReader.setContentHandler(addPlaceHandler);
+        break;
       case TOPICS:
-        // TODO(kfritschie): create a new content handler and pass it articleData.getTopics
-          AddContentHandler addTopicHandler = new AddContentHandler(xmlReader, xmlReader.getContentHandler(), articleData.getTopics());
-          xmlReader.setContentHandler(addTopicHandler);
+        AddContentHandler addTopicHandler = new AddContentHandler(xmlReader, xmlReader.getContentHandler(), articleData.getTopics());
+        xmlReader.setContentHandler(addTopicHandler);
         break;
       case BODY:
-        // TODO: add lucene parsing to body.
         inBody = true;
         buffer = new StringBuffer();
         break;
@@ -156,22 +137,41 @@ public class XMLParser extends DefaultHandler {
     }
   }
 
+  /**
+   * Set up the list of stop words.
+   */
   private void initStopWords() {
     charArraySet = CharArraySet.copy(StandardAnalyzer.STOP_WORDS_SET);
     charArraySet.add("blah");
   }
+
   /**
    * Tokenizes the buffer, ignoring stop words, and adds the words to articleData.
    */
   private void parseBodyWords() {
+    // Remove stop words
     TokenStream stream = new StopFilter(new LowerCaseTokenizer(new StringReader(buffer.toString())), charArraySet);
+
+    // Stem tokens
+    stream = new PorterStemFilter(stream);
+
+    // Boilerplate to obtain tokens.
     CharTermAttribute charTermAttribute = stream.addAttribute(CharTermAttribute.class);
 
+    // Add filtered tokens to article data.
     try {
       stream.reset();
       while (stream.incrementToken()) {
         articleData.addWord(charTermAttribute.toString());
       }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    // Wrap things up.
+    try {
+      stream.end();
+      stream.close();
     } catch (IOException e) {
       e.printStackTrace();
     }

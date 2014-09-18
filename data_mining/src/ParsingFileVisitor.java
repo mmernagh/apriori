@@ -15,6 +15,8 @@ import java.util.Vector;
 
 /**
  * File visitor that parses any .sgm files using an {@link XMLParser}.
+ *
+ * Author: mernagh
  */
 public class ParsingFileVisitor extends SimpleFileVisitor<Path> {
 

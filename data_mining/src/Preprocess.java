@@ -6,12 +6,15 @@ import java.util.*;
  * Preprocesses reuters articles in .sgm files in the local directory, creating feature vectors for each.
  * The feature vectors are composed of the words in the xml tags and a frequency list of the top XX rare words
  * in the document body.
+ *
+ * Author: mernagh
  */
 public class Preprocess {
 
   private static final int numberOfBodyWordsInFeatureVector = 5;
-  // private static final String pathToArticles = "/home/0/srini/WWW/674/public/reuters";
-  private static final String pathToArticles = "/home/armageddon/Downloads";
+  private static final String pathToArticles = "/home/0/srini/WWW/674/public/reuters";
+
+  // Custom comparator for map that doesn't return 0, so that map entries don't get overwritten.
   private static final Comparator<Integer> mapComparator = new Comparator<Integer>() {
     public int compare(Integer a, Integer b) {
       if (a >= b) {
@@ -21,7 +24,6 @@ public class Preprocess {
       }
     }
   };
-
 
   /**
    * Creates a Map<String, Integer> mapping all terms from all documents to the number of documents that each term
@@ -98,19 +100,19 @@ public class Preprocess {
     }
 
     // Print feature vector
-    System.out.print("<");
+    System.out.print("<FV><BODY ");
     for (Map.Entry<Integer, String> entry : map.entrySet()) {
-      System.out.format(" %s=%.2f", entry.getValue(), entry.getKey() / 1000.0);
+      System.out.format("%s=%.2f ", entry.getValue(), entry.getKey() / 1000.0);
     }
-    System.out.print("><");
+    System.out.print("></BODY><PLACES> ");
     for (String place : articleData.getPlaces()) {
-      System.out.print(" " + place);
+      System.out.print(place + " ");
     }
-    System.out.print("><");
+    System.out.print("></PLACES><TOPICS> ");
     for (String topic : articleData.getTopics()) {
-      System.out.print(" " + topic);
+      System.out.print(topic + " ");
     }
-    System.out.println(">");
+    System.out.println("></TOPICS></FV>");
   }
 
 
@@ -131,10 +133,15 @@ public class Preprocess {
       e.printStackTrace();
     }
 
+    // Print results to stdout.
+    System.out.println("<?xml version=\"1.1\"?>\n<FEATURE-VECTORS>");
+
     Map<String, Integer> wordFrequencies = generateWordFrequencies(articleDataSet);
     for (ArticleData articleData : articleDataSet) {
       generateFeatureVector(articleData, wordFrequencies, articleDataSet.size());
     }
+
+    System.out.println("</FEATURE-VECTORS");
   }
 
 }
