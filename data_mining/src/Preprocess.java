@@ -12,6 +12,16 @@ public class Preprocess {
   private static final int numberOfBodyWordsInFeatureVector = 5;
   // private static final String pathToArticles = "/home/0/srini/WWW/674/public/reuters";
   private static final String pathToArticles = "/home/armageddon/Downloads";
+  private static final Comparator<Integer> mapComparator = new Comparator<Integer>() {
+    public int compare(Integer a, Integer b) {
+      if (a >= b) {
+        return -1;
+      } else {
+        return 1;
+      }
+    }
+  };
+
 
   /**
    * Creates a Map<String, Integer> mapping all terms from all documents to the number of documents that each term
@@ -46,10 +56,10 @@ public class Preprocess {
    * @param combinedWordFrequencies A Map<String, Integer> of terms to the number of documents containing that term.
    * @return The tf-idf score.
    */
-  private static double getWordScore(Map.Entry<String, Integer> localWordFrequency, int numberOfDocs,
+  private static int getWordScore(Map.Entry<String, Integer> localWordFrequency, int numberOfDocs,
                                      Map<String, Integer> combinedWordFrequencies) {
-    return localWordFrequency.getValue()
-        * Math.log((double) numberOfDocs / combinedWordFrequencies.get(localWordFrequency.getKey()));
+    return (int) (localWordFrequency.getValue()
+            * Math.log((double) numberOfDocs / combinedWordFrequencies.get(localWordFrequency.getKey())) * 1000);
   }
 
   /**
@@ -63,15 +73,7 @@ public class Preprocess {
   private static void generateFeatureVector(ArticleData articleData, Map<String, Integer> wordFrequency, int numDocs) {
 
     // A tree map of words and scores. A custom comparator ensures that duplicate scores don't get overwritten.
-    TreeMap<Double, String> map = new TreeMap<Double, String>(new Comparator<Double>() {
-      public int compare(Double a, Double b) {
-        if (Double.compare(a, b) >= 0 ) {
-          return -1;
-        } else {
-          return 1;
-        }
-      }
-    });
+    TreeMap<Integer, String> map = new TreeMap<Integer, String>(mapComparator);
 
     Queue<Map.Entry<String, Integer>> sortedWordFrequencies = articleData.getSortedWordFrequencies();
 
@@ -79,7 +81,7 @@ public class Preprocess {
     for (int i = 0; i < numberOfBodyWordsInFeatureVector; ++i) {
       if (sortedWordFrequencies.peek() != null) {
         Map.Entry<String, Integer> entry = sortedWordFrequencies.poll();
-        double score = getWordScore(entry, numDocs, wordFrequency);
+        int score = getWordScore(entry, numDocs, wordFrequency);
         map.put(score, entry.getKey());
       }
     }
@@ -87,17 +89,18 @@ public class Preprocess {
     // Add more words if their scores are higher than the lowest score, until a word is found whose score is not
     // higher than the lowest score.
     Map.Entry<String, Integer> nextEntry = sortedWordFrequencies.poll();
+    Map.Entry<Integer, String> mapLastEntry = map.pollLastEntry();
 
-    while (nextEntry != null && Double.compare(map.lastKey(), getWordScore(nextEntry, numDocs, wordFrequency)) < 0) {
-      map.remove(map.lastKey());
+    while (nextEntry != null && mapLastEntry.getKey() < getWordScore(nextEntry, numDocs, wordFrequency)) {
       map.put(getWordScore(nextEntry, numDocs, wordFrequency), nextEntry.getKey());
       nextEntry = sortedWordFrequencies.poll();
+      mapLastEntry = map.pollLastEntry();
     }
 
     // Print feature vector
     System.out.print("<");
-    for (Map.Entry<Double, String> entry : map.entrySet()) {
-      System.out.format(" %s=%.2f", entry.getValue(), entry.getKey());
+    for (Map.Entry<Integer, String> entry : map.entrySet()) {
+      System.out.format(" %s=%.2f", entry.getValue(), entry.getKey() / 1000.0);
     }
     System.out.print("><");
     for (String place : articleData.getPlaces()) {
