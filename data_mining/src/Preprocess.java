@@ -96,11 +96,11 @@ public class Preprocess {
     // Print feature vector
     System.out.print("<");
     for (Map.Entry<Double, String> entry : map.entrySet()) {
-      System.out.print(" " + entry.getValue() + "=" + entry.getKey());
+      System.out.format(" %s=%.2f", entry.getValue(), entry.getKey());
     }
     System.out.print("><");
     for (String place : articleData.getPlaces()) {
-      System.out.println(" " + place);
+      System.out.print(" " + place);
     }
     System.out.print("><");
     for (String topic : articleData.getTopics()) {

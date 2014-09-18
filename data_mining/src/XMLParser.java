@@ -1,8 +1,16 @@
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.core.LowerCaseTokenizer;
+import org.apache.lucene.analysis.core.StopFilter;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
+import org.apache.lucene.analysis.util.CharArraySet;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Set;
@@ -40,12 +48,15 @@ public class XMLParser extends DefaultHandler {
   private StringBuffer buffer;
   private boolean inBody = false;
 
+  private CharArraySet charArraySet = StandardAnalyzer.STOP_WORDS_SET;
+
   // Used to create a temporary IgnoreContentHandler when needed.
   private XMLReader xmlReader;
 
   public XMLParser(XMLReader xmlReader, Set<ArticleData> articleDataSet) {
     this.xmlReader = xmlReader;
     this.articleDataSet = articleDataSet;
+    initStopWords();
   }
 
   @Override
@@ -141,10 +152,24 @@ public class XMLParser extends DefaultHandler {
     }
   }
 
+  private void initStopWords() {
+    charArraySet = CharArraySet.copy(StandardAnalyzer.STOP_WORDS_SET);
+    charArraySet.add("blah");
+  }
   /**
    * Tokenizes the buffer, ignoring stop words, and adds the words to articleData.
    */
   private void parseBodyWords() {
+    TokenStream stream = new StopFilter(new LowerCaseTokenizer(new StringReader(buffer.toString())), charArraySet);
+    CharTermAttribute charTermAttribute = stream.addAttribute(CharTermAttribute.class);
 
+    try {
+      stream.reset();
+      while (stream.incrementToken()) {
+        articleData.addWord(charTermAttribute.toString());
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 }
