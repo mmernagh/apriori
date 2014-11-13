@@ -14,8 +14,8 @@ public class Mapper {
 	
 	private static final int FVLENGTH = 19024;
 
-	private Map<Integer, List<Integer>> fVLists = new HashMap<Integer, List<Integer>>(FVLENGTH);
-	private Map<Integer, List<Integer>> wordOccurrences = new HashMap<Integer, List<Integer>>(FVLENGTH);
+	private List<List<Integer>> fVLists = new ArrayList<List<Integer>>(FVLENGTH);
+	private List<List<Integer>> wordOccurrences = new ArrayList<List<Integer>>(FVLENGTH);
 
 	private int fVCount = 0;
 	private Map<String, Integer> wordIndices = new HashMap<String, Integer>(30000);
@@ -38,11 +38,11 @@ public class Mapper {
 		}
 	}
 	
-	public Map<Integer, List<Integer>> getFV() {
+	public List<List<Integer>> getFV() {
 		return fVLists;
 	}
 	
-	public Map<Integer, List<Integer>> getWordLists() {
+	public List<List<Integer>> getWordLists() {
 		return wordOccurrences;
 	}
 	
@@ -53,13 +53,14 @@ public class Mapper {
 			for (String s : split) {
 				if (!wordIndices.containsKey(s)) {
 					wordIndices.put(s, nextWordIndex);
-					wordOccurrences.put(nextWordIndex, new ArrayList<Integer>(FVLENGTH));
+					wordOccurrences.add(new ArrayList<Integer>(FVLENGTH));
 					++nextWordIndex;
 				}
 				fvIndices.add(wordIndices.get(s));
 				wordOccurrences.get(wordIndices.get(s)).add(fVCount);
 			}
-			fVLists.put(fVCount++, fvIndices);
+			fVLists.add(fvIndices);
+			fVCount++;
 		}
 	}
 }
