@@ -24,7 +24,7 @@ public class Minhasher {
 		List<Integer> seeds = new ArrayList<Integer>(num);
 		Random rand = new Random();
 		for (int i = 0; i < num; ++i) {
-			seeds.add(rand.nextInt());
+			seeds.add(rand.nextInt(Integer.MAX_VALUE));
 		}
 		return seeds;
 	}
@@ -34,7 +34,9 @@ public class Minhasher {
 		Integer[] vals = new Integer[numFV];
 		Arrays.fill(vals, Integer.MAX_VALUE);
 		for (int i = 0; i < numHashes; ++i) {
-			sketch.add(Arrays.asList(vals));
+			Integer[] copy = new Integer[numFV];
+			System.arraycopy(vals, 0, copy, 0, vals.length );
+			sketch.add(Arrays.asList(copy));
 		}
 		return sketch;
 	}
@@ -42,10 +44,17 @@ public class Minhasher {
 	private void fillSketch(List<List<Integer>> words) {
 		List<Integer> hashes;
 		for (int i = 0; i < words.size(); ++i) {
+			hashes = hash(i);
 			for (int a : words.get(i)) {
-				hashes = hash(i);
-				
-				if (sketch.get(arg0))
+				updateSketch(hashes, a, i);
+			}
+		}
+	}
+	
+	private void updateSketch(List<Integer> hashes, int sketchIndex, int i) {
+		for (int j = 0; j < hashes.size(); ++j){
+			if (hashes.get(j) < sketch.get(j).get(sketchIndex)) {
+				sketch.get(j).set(sketchIndex, hashes.get(j));
 			}
 		}
 	}
