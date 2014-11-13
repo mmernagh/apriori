@@ -3,6 +3,7 @@ package src;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +60,7 @@ public class Mapper {
 				fvIndices.add(wordIndices.get(s));
 				wordOccurrences.get(wordIndices.get(s)).add(fVCount);
 			}
+			Collections.sort(fvIndices);
 			fVLists.add(fvIndices);
 			fVCount++;
 		}
