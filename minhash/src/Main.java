@@ -1,4 +1,4 @@
-package minhash;
+package src;
 
 /**
  * Generates the Jaccard similarity of all feature vectors pairwise, and compares this to
@@ -6,8 +6,11 @@ package minhash;
  */
 public class Main {
 
+	public static final String FILENAME = "feature_vectors.txt";
+	
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+		
+		Mapper mapper = new Mapper(FILENAME);
 
 	}
 

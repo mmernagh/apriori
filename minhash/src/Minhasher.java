@@ -1,4 +1,4 @@
-package minhash;
+package src;
 
 public class Minhasher {
 
