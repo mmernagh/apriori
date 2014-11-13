@@ -10,7 +10,11 @@ public class Main {
 	
 	public static void main(String[] args) {
 		
-		Mapper mapper = new Mapper(FILENAME);
+		try {
+			Mapper mapper = new Mapper(FILENAME);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 	}
 
