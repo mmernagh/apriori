@@ -6,7 +6,10 @@ import java.util.Map;
 public class JaccardComparer {
      private short jaccardResults[];
 
-     public short[] JaccardComparer(List<List<Integer>> fullSet){ return jaccardResults;}
+     public JaccardComparer(List<List<Integer>> fullSet){fillResults(fullSet);}
+
+    public short[] getResults(List<List<Integer>> fullSet)
+    {return jaccardResults;}
 
      private void fillResults(List<List<Integer>> words) {
         double result;
@@ -25,7 +28,7 @@ public class JaccardComparer {
         short shortRes = (short) result;
         jaccardResults[index]= shortRes;
     }
-    
+
     public double similarity( List<Integer> arg1,  List<Integer> arg2)
         {
             double similarity = 0;
