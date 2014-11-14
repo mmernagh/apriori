@@ -4,15 +4,34 @@ import java.util.List;
 import java.util.Map;
 
 public class JaccardComparer {
-        public JaccardComparer(Map<Integer, List<Integer>> map){
-            super();
+     private short jaccardResults[];
+
+     public short[] JaccardComparer(List<List<Integer>> fullSet){ return jaccardResults;}
+
+     private void fillResults(List<List<Integer>> words) {
+        double result;
+        int index=0;
+        for (int i = 0; i < words.size(); ++i) {
+            for (int j : words.get(i)) {
+                result= similarity(words.get(i), words.get(j));
+                storeResult(result,index);
+                index++;
+            }
         }
-        public double distance ( List<Integer> arg1,  List<Integer> arg2)
+    }
+
+    public void storeResult (double result, int index)
+    {
+        short shortRes = (short) result;
+        jaccardResults[index]= shortRes;
+    }
+    
+    public double similarity( List<Integer> arg1,  List<Integer> arg2)
         {
             double similarity = 0;
             int firstI, secondI;
-            int firstNumValues = arg1.size(); //a
-            int secondNumValues = arg2.size(); //b
+            int firstNumValues = arg1.size(); //set a
+            int secondNumValues = arg2.size(); //set b
             int union = firstNumValues+secondNumValues;// everything in both sets (union a,b)
             int classIndex = union-1;
             double intersection = 0;
