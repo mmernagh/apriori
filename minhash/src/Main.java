@@ -2,6 +2,7 @@ package src;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Generates the Jaccard similarity of all feature vectors pairwise, and compares this to
@@ -11,9 +12,12 @@ public class Main {
 
 	public static final String FILENAME = "feature_vectors.txt";
 	public static final List<Integer> SKETCH_SIZES = Arrays.asList(16, 32, 64, 128);
-	
+    private static final int numthreads = 4;
+
 	public static void main(String[] args) {
-		
+
+        List<Thread> threads = new ArrayList<Thread>(numthreads);
+
 		Mapper mapper = null;
 		try {
 			mapper = new Mapper(FILENAME);
@@ -29,7 +33,7 @@ public class Main {
 
 		long startTime = System.currentTimeMillis();
 		
-		// TODO: build comparisons
+		// TODO: build comparisons Jaccard
 		
 		System.out.format("Time to generate Jaccard comparisons: %d\n", 
 				(System.currentTimeMillis() - startTime) / 1000);
@@ -45,7 +49,7 @@ public class Main {
 			
 		}
 		
-		System.out.format("Time to generate Jaccard comparisons: %d\n", 
+		System.out.format("Time to generate Minhash comparisons: %d\n",
 				(System.currentTimeMillis() - startTime) / 1000);
 	}
 
