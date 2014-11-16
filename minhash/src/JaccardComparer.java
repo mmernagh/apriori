@@ -1,20 +1,19 @@
 package src;
 
 import java.util.List;
-import java.util.Map;
 
 public class JaccardComparer {
-     private short jaccardResults[];
+    private short jaccardResults[];
 
-     public JaccardComparer(List<List<Integer>> fullSet){fillResults(fullSet);}
+    public JaccardComparer(List<List<Integer>> fullSet, int start, int stop){fillResults(fullSet, start, stop);}
 
-    public short[] getResults(List<List<Integer>> fullSet)
+    public short[] getResults()
     {return jaccardResults;}
 
-     private void fillResults(List<List<Integer>> words) {
+     private void fillResults(List<List<Integer>> words, int start, int stop) {
         double result;
         int index=0;
-        for (int i = 0; i < words.size(); ++i) {
+        for (int i = start; i < stop; ++i) {
             for (int j : words.get(i)) {
                 result= similarity(words.get(i), words.get(j));
                 storeResult(result,index);

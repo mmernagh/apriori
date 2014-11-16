@@ -18,7 +18,7 @@ public class Main {
 
         List<Thread> threads = new ArrayList<Thread>(numthreads);
         List<short[]> jaccardResults = new ArrayList<short[]>();
-
+        List<short[]> cosineResults = new ArrayList<short[]>();
 		Mapper mapper = null;
 		try {
 			mapper = new Mapper(FILENAME);
@@ -39,7 +39,7 @@ public class Main {
         RunJaccard runJaccard3 = new RunJaccard(wordLists, wordLists.size()*5/16, wordLists.size()/2);
         RunJaccard runJaccard4 = new RunJaccard(wordLists, wordLists.size()/2, wordLists.size());
 
-		// TODO: build comparisons Jaccard
+		// Jaccard comparisons
             threads.add(new Thread(runJaccard1));
             threads.get(0).start();
             threads.add(new Thread(runJaccard2));
@@ -72,10 +72,38 @@ public class Main {
 		for (int a : SKETCH_SIZES) {
 			minhasher = new Minhasher(wordLists, fVLists.size(), a);
 			sketch = minhasher.getSketch();
-						
-			// TODO: compare minhasher to jaccard results
-			
+
+            RunCosine runCos1 = new RunCosine(sketch, 0, sketch.size()*5/32);
+            RunCosine runCos2 = new RunCosine(sketch, sketch.size()*5/32, sketch.size()*5/16);
+            RunCosine runCos3 = new RunCosine(sketch, sketch.size()*5/16, sketch.size()/2);
+            RunCosine runCos4 = new RunCosine(sketch, sketch.size()/2, sketch.size());
+
+            // Cosine Sketch comparisons
+            threads.add(new Thread(runJaccard1));
+            threads.get(0).start();
+            threads.add(new Thread(runJaccard2));
+            threads.get(1).start();
+            threads.add(new Thread(runJaccard3));
+            threads.get(2).start();
+            threads.add(new Thread(runJaccard4));
+            threads.get(3).start();
+
+            try {
+                for (Thread thread : threads) {
+                    thread.join();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            cosineResults.add(runCos1.getCosineResults());
+            cosineResults.add(runCos2.getCosineResults());
+            cosineResults.add(runCos3.getCosineResults());
+            cosineResults.add(runCos4.getCosineResults());
+
+            threads.clear();
+
 		}
+        // Now do a master comparison of the jaccard results and the cosine sketch results 
 		
 		System.out.format("Time to generate Minhash comparisons: %d\n",
 				(System.currentTimeMillis() - startTime) / 1000);
