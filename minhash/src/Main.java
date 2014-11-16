@@ -17,6 +17,7 @@ public class Main {
 	public static void main(String[] args) {
 
         List<Thread> threads = new ArrayList<Thread>(numthreads);
+        List<short[]> jaccardResults = new ArrayList<short[]>();
 
 		Mapper mapper = null;
 		try {
@@ -32,8 +33,35 @@ public class Main {
 		mapper = null;
 
 		long startTime = System.currentTimeMillis();
-		
+
+        RunJaccard runJaccard1 = new RunJaccard(wordLists, 0, wordLists.size()*5/32);
+        RunJaccard runJaccard2 = new RunJaccard(wordLists, wordLists.size()*5/32, wordLists.size()*5/16);
+        RunJaccard runJaccard3 = new RunJaccard(wordLists, wordLists.size()*5/16, wordLists.size()/2);
+        RunJaccard runJaccard4 = new RunJaccard(wordLists, wordLists.size()/2, wordLists.size());
+
 		// TODO: build comparisons Jaccard
+            threads.add(new Thread(runJaccard1));
+            threads.get(0).start();
+            threads.add(new Thread(runJaccard2));
+            threads.get(1).start();
+            threads.add(new Thread(runJaccard3));
+            threads.get(2).start();
+            threads.add(new Thread(runJaccard4));
+            threads.get(3).start();
+
+        try {
+            for (Thread thread : threads) {
+                thread.join();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        jaccardResults.add(runJaccard1.getJaccardResults());
+        jaccardResults.add(runJaccard2.getJaccardResults());
+        jaccardResults.add(runJaccard3.getJaccardResults());
+        jaccardResults.add(runJaccard4.getJaccardResults());
+
+        threads.clear();
 		
 		System.out.format("Time to generate Jaccard comparisons: %d\n", 
 				(System.currentTimeMillis() - startTime) / 1000);
