@@ -3,12 +3,12 @@ package src;
 import java.util.List;
 
 /**
- * Pair-wise compares the min-hash sketch, and compares the results to a list of distances.
+ * Pair-wise compares the results from minhash results (using cosine) to the Jaccard results
  */
 public class MasterComparer {
 	
 	private double sse;
-	public MasterComparer(short[] jaccardResults, short[] minCosResults) {
+	public MasterComparer(List<short[]> jaccardResults, List<short[]> minCosResults) {
 		compare(jaccardResults, minCosResults);
 	}
 	
@@ -16,13 +16,16 @@ public class MasterComparer {
 		return sse;
 	}
 
-    public void compare(short[] jaccardResults, short[] minCosResults){
+    public void compare(List<short[]> jaccardResults, List<short[]> minCosResults){
         double diff=0;
 
-        for (int i= 0; i < jaccardResults.length; i++) {
-            diff += Math.abs(jaccardResults[i] - minCosResults[i]);
+        for (int i= 0; i < 4; i++) {
+            for(int j =0; j < jaccardResults.get(i).length; j++)
+            {
+                diff += Math.abs(jaccardResults.get(i)[j] - minCosResults.get(i)[j]);
+            }
         }
-        
+
         sse = diff*diff;
     }
 }
