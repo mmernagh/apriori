@@ -10,7 +10,7 @@ import java.util.ArrayList;
  */
 public class Main {
 
-	public static final String FILENAME = "feature_vectors.txt";
+	public static final String FILENAME = "C:\\Users\\kfritschie\\Documents\\Classes_AU14\\DataMining\\feature_vectors.txt";
 	public static final List<Integer> SKETCH_SIZES = Arrays.asList(16, 32, 64, 128);
     private static final int numthreads = 4;
 
@@ -34,10 +34,10 @@ public class Main {
 
 		long startTime = System.currentTimeMillis();
 
-        RunJaccard runJaccard1 = new RunJaccard(wordLists, 0, wordLists.size()*5/32);
-        RunJaccard runJaccard2 = new RunJaccard(wordLists, wordLists.size()*5/32, wordLists.size()*5/16);
-        RunJaccard runJaccard3 = new RunJaccard(wordLists, wordLists.size()*5/16, wordLists.size()/2);
-        RunJaccard runJaccard4 = new RunJaccard(wordLists, wordLists.size()/2, wordLists.size());
+        RunJaccard runJaccard1 = new RunJaccard(fVLists, 0, fVLists.size()*5/32);
+        RunJaccard runJaccard2 = new RunJaccard(fVLists, fVLists.size()*5/32, fVLists.size()*5/16);
+        RunJaccard runJaccard3 = new RunJaccard(fVLists, fVLists.size()*5/16, fVLists.size()/2);
+        RunJaccard runJaccard4 = new RunJaccard(fVLists, fVLists.size()/2, fVLists.size());
 
 		// Jaccard comparisons
             threads.add(new Thread(runJaccard1));
