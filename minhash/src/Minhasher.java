@@ -30,11 +30,11 @@ public class Minhasher {
 	}
 	
 	private List<List<Integer>> initSketch(int numHashes, int numFV) {
-		List<List<Integer>> sketch = new ArrayList<List<Integer>>(numHashes);
-		Integer[] vals = new Integer[numFV];
+		List<List<Integer>> sketch = new ArrayList<List<Integer>>(numFV);
+		Integer[] vals = new Integer[numHashes];
 		Arrays.fill(vals, Integer.MAX_VALUE);
-		for (int i = 0; i < numHashes; ++i) {
-			Integer[] copy = new Integer[numFV];
+		for (int i = 0; i < numFV; ++i) {
+			Integer[] copy = new Integer[numHashes];
 			System.arraycopy(vals, 0, copy, 0, vals.length );
 			sketch.add(Arrays.asList(copy));
 		}
@@ -43,18 +43,22 @@ public class Minhasher {
 	
 	private void fillSketch(List<List<Integer>> words) {
 		List<Integer> hashes;
+		
+		// Iterate through each document word
 		for (int i = 0; i < words.size(); ++i) {
 			hashes = hash(i);
+			
+			// Iterate through the feature-vector indices for each word
 			for (int a : words.get(i)) {
-				updateSketch(hashes, a, i);
+				updateSketch(hashes, a);
 			}
 		}
 	}
 	
-	private void updateSketch(List<Integer> hashes, int sketchIndex, int i) {
+	private void updateSketch(List<Integer> hashes, int fVIndex) {
 		for (int j = 0; j < hashes.size(); ++j){
-			if (hashes.get(j) < sketch.get(j).get(sketchIndex)) {
-				sketch.get(j).set(sketchIndex, hashes.get(j));
+			if (hashes.get(j) < sketch.get(fVIndex).get(j)) {
+				sketch.get(fVIndex).set(j, hashes.get(j));
 			}
 		}
 	}
