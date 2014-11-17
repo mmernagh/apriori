@@ -7,14 +7,14 @@ import java.util.List;
  */
 public class CosineComparer {
    // private short cosineResults[];
-    private double sse;
+    private double sumError;
 
     public CosineComparer(List<List<Integer>> fullSet, int start, int stop, short[] jaccardResult){
         compareResults(fullSet,start,stop, jaccardResult);
         }
 
-    public double getSSE()
-    {return sse;}
+    public double getSumError()
+    {return sumError;}
 
     private void compareResults(List<List<Integer>> words, int start, int stop, short[] jaccardResult) {
         double cosine;
@@ -22,7 +22,7 @@ public class CosineComparer {
         for (int i = start; i < stop; ++i) {
             for (int j : words.get(i)) {
                 cosine = distance(words.get(i), words.get(j));
-                sse += Math.abs(jaccardResult[index] - cosine);
+                sumError += Math.abs(jaccardResult[index] - cosine);
                 //this is assuming that the correct jaccard array is passed to the CosineComparer
                 index++;
             }

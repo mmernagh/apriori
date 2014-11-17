@@ -19,6 +19,7 @@ public class Main {
         List<Thread> threads = new ArrayList<Thread>(numthreads);
         List<short[]> jaccardResults = new ArrayList<short[]>();
         List<short[]> cosineResults = new ArrayList<short[]>();
+        double SSE=0;
 		Mapper mapper = null;
 		try {
 			mapper = new Mapper(FILENAME);
@@ -73,10 +74,10 @@ public class Main {
 			minhasher = new Minhasher(wordLists, fVLists.size(), a);
 			sketch = minhasher.getSketch();
 
-            RunCosine runCos1 = new RunCosine(sketch, 0, sketch.size()*5/32);
-            RunCosine runCos2 = new RunCosine(sketch, sketch.size()*5/32, sketch.size()*5/16);
-            RunCosine runCos3 = new RunCosine(sketch, sketch.size()*5/16, sketch.size()/2);
-            RunCosine runCos4 = new RunCosine(sketch, sketch.size()/2, sketch.size());
+            RunCosine runCos1 = new RunCosine(sketch, 0, sketch.size()*5/32, jaccardResults.get(0));
+            RunCosine runCos2 = new RunCosine(sketch, sketch.size()*5/32, sketch.size()*5/16, jaccardResults.get(1));
+            RunCosine runCos3 = new RunCosine(sketch, sketch.size()*5/16, sketch.size()/2, jaccardResults.get(2));
+            RunCosine runCos4 = new RunCosine(sketch, sketch.size()/2, sketch.size(), jaccardResults.get(3));
 
             // Cosine Sketch comparisons
             threads.add(new Thread(runJaccard1));
@@ -95,11 +96,8 @@ public class Main {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            cosineResults.add(runCos1.getCosineResults());
-            cosineResults.add(runCos2.getCosineResults());
-            cosineResults.add(runCos3.getCosineResults());
-            cosineResults.add(runCos4.getCosineResults());
 
+            SSE = runCos1.getSumError() + runCos2.getSumError() + runCos3.getSumError() + runCos4.getSumError();
             threads.clear();
 
 		}
@@ -108,9 +106,8 @@ public class Main {
 				(System.currentTimeMillis() - startTime) / 1000);
 
         // Now do a master comparison of the jaccard results and the cosine sketch results
-        MasterComparer masterComparer = new MasterComparer(jaccardResults,cosineResults);
-       double sse= masterComparer.sse();
-       System.out.println("The sum squared error is : " + sse);
+       SSE = SSE*SSE; //sum error, now squared
+       System.out.println("The sum squared error is : " + SSE);
 	}
 
 }

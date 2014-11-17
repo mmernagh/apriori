@@ -10,7 +10,7 @@ public class RunCosine implements Runnable{
 
    private CosineComparer cosineComparer;
    private String name;
-   private double sse;
+   private double se;
 
    public RunCosine(List<List<Integer>> fullSet, int start, int stop, short[] jaccardResult){
     this.cosineComparer = new CosineComparer(fullSet, start, stop, jaccardResult);
@@ -19,12 +19,12 @@ public class RunCosine implements Runnable{
     public void run() {
         long startTime = System.nanoTime();
         try {
-             sse = cosineComparer.getSSE();
+             se = cosineComparer.getSumError();
         } catch (Exception e) {
                 e.printStackTrace();
         }
         System.out.format("Total time for %s: %d s\n", name, (System.nanoTime() - startTime) / 1000000000);
     }
-    public double getSSE(){return sse;}
+    public double getSumError(){return se;}
 
 }
