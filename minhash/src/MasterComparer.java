@@ -8,12 +8,21 @@ import java.util.List;
 public class MasterComparer {
 	
 	private double sse;
-	public MasterComparer(List<List<Integer>> sketch, char[] jaccardResults) {
-		
+	public MasterComparer(short[] jaccardResults, short[] minCosResults) {
+		compare(jaccardResults, minCosResults);
 	}
 	
 	public double sse() {
 		return sse;
 	}
 
+    public void compare(short[] jaccardResults, short[] minCosResults){
+        double diff=0;
+
+        for (int i= 0; i < jaccardResults.length; i++) {
+            diff += Math.abs(jaccardResults[i] - minCosResults[i]);
+        }
+        
+        sse = diff*diff;
+    }
 }

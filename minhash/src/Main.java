@@ -103,7 +103,7 @@ public class Main {
             threads.clear();
 
 		}
-        // Now do a master comparison of the jaccard results and the cosine sketch results 
+        // Now do a master comparison of the jaccard results and the cosine sketch results
 		
 		System.out.format("Time to generate Minhash comparisons: %d\n",
 				(System.currentTimeMillis() - startTime) / 1000);
