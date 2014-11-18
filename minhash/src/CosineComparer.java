@@ -1,32 +1,39 @@
 package src;
 
+
 import java.util.List;
 
 /**
  * Created by kfritschie on 11/16/2014.
  */
 public class CosineComparer {
-   // private short cosineResults[];
-    private double sumError;
+    private double sumSquaredDifference;
 
     public CosineComparer(List<List<Integer>> fullSet, int start, int stop, short[] jaccardResult){
-        compareResults(fullSet,start,stop, jaccardResult);
-        }
+    	compareResults(fullSet,start,stop, jaccardResult);
+    }
 
-    public double getSumError()
-    {return sumError;}
+    public double getSumSquaredDiff() {
+    	return sumSquaredDifference;
+    }
 
     private void compareResults(List<List<Integer>> words, int start, int stop, short[] jaccardResult) {
         double cosine;
         int index=0;
         for (int i = start; i < stop; ++i) {
-            for (int j : words.get(i)) {
+            for (int j = i + 1; j < stop; ++j) {
                 cosine = distance(words.get(i), words.get(j));
-                sumError += Math.abs(jaccardResult[index] - cosine);
+                sumSquaredDifference += Math.pow(difference(cosine, jaccardResult[index]), 2.0);
                 //this is assuming that the correct jaccard array is passed to the CosineComparer
                 index++;
             }
         }
+    }
+    
+    private double difference(double cosineValue, short jaccardValue) {
+    	short convertedCosine = (short) (cosineValue * 65535 - 32768);
+    	int shortDiff = Math.abs(jaccardValue - convertedCosine);
+    	return shortDiff / 65535.0;
     }
 
     public double distance( List<Integer> arg1,  List<Integer> arg2)

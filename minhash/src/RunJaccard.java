@@ -9,21 +9,25 @@ import java.util.List;
 public class RunJaccard implements Runnable{
 
     private JaccardComparer jaccardComparer;
-    private String name;
+    private int start;
+    private int end;
+    private List<List<Integer>> fvList;
     private short[] results;
 
-        public RunJaccard(List<List<Integer>> fullSet, int start, int stop){
-            this.jaccardComparer = new JaccardComparer(fullSet, start, stop);
-        }
+    public RunJaccard(List<List<Integer>> fullSet, int start, int stop){
+    	this.start = start;
+    	this.end = stop;
+    	this.fvList = fullSet;
+    }
 
-        public void run() {
-            long startTime = System.nanoTime();
-            try {
-               results = jaccardComparer.getResults();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            System.out.format("Total time for %s: %d s\n", name, (System.nanoTime() - startTime) / 1000000000);
-        }
-    public short[] getJaccardResults(){return results;}
+    public void run() {
+        long startTime = System.nanoTime();
+        jaccardComparer = new JaccardComparer(fvList, start, end);
+        System.out.format("Total time for Jaccard (s): %d s\n", (System.nanoTime() - startTime) / 1000000000);
+        results = jaccardComparer.getResults();
+    }
+    
+    public short[] getJaccardResults(){
+    	return results;
+    }
 }
