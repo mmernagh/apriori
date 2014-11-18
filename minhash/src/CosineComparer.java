@@ -9,7 +9,7 @@ import java.util.List;
 public class CosineComparer {
     private double sumSquaredDifference;
 
-    public CosineComparer(List<List<Integer>> fullSet, int start, int stop, short[] jaccardResult){
+    public CosineComparer(List<List<Integer>> fullSet, int start, int stop, List<short[]> jaccardResult){
     	compareResults(fullSet,start,stop, jaccardResult);
     }
 
@@ -17,15 +17,18 @@ public class CosineComparer {
     	return sumSquaredDifference;
     }
 
-    private void compareResults(List<List<Integer>> words, int start, int stop, short[] jaccardResult) {
+    private void compareResults(List<List<Integer>> words, int start, int stop, List<short[]> jaccardResult) {
         double cosine;
-        int index=0;
+        int jaccardIndex = 0;
         for (int i = start; i < stop; ++i) {
             for (int j = i + 1; j < words.size(); ++j) {
                 cosine = distance(words.get(i), words.get(j));
-                sumSquaredDifference += Math.pow(difference(cosine, jaccardResult[index]), 2.0);
-                //this is assuming that the correct jaccard array is passed to the CosineComparer
-                index++;
+                if (jaccardResult.get(jaccardIndex)[0] == i && jaccardResult.get(jaccardIndex)[1] == j) {
+                  sumSquaredDifference += Math.pow(difference(cosine, jaccardResult.get(jaccardIndex)[2]), 2.0);
+                  ++jaccardIndex;
+                } else {
+                  sumSquaredDifference += Math.pow(difference(cosine, Short.MIN_VALUE), 2.0);
+                }
             }
         }
     }

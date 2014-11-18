@@ -1,39 +1,36 @@
 package src;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class JaccardComparer {
-    private short jaccardResults[];
+    private List<short[]> jaccardResults = new ArrayList<short[]>();
 
     public JaccardComparer(List<List<Integer>> fullSet, int start, int stop){
-        jaccardResults = new short[nChooseTwo(stop - start) * fullSet.size()];
         fillResults(fullSet, start, stop);
     }
-    
-    private int nChooseTwo(int n) {
-    	return (n * n - 1) / 2;
-    }
 
-    public short[] getResults() {
+    public List<short[]> getResults() {
     	return jaccardResults;
     }
 
      private void fillResults(List<List<Integer>> words, int start, int stop) {
         double result;
-        int index=0;
         for (int i = start; i < stop; ++i) {
             for (int j = i + 1; j < words.size(); ++j) {
                 result= similarity(words.get(i), words.get(j));
-                storeResult(result,index);
-                index++;
+                if (Double.compare(result, 0.0) > 0) {
+                  storeResult(result, i, j);
+                }
             }
         }
     }
 
-    public void storeResult (double result, int index)
+    public void storeResult (double result, int smallerIndex, int biggerIndex)
     {
         short shortRes = (short) (result*65535-32768);
-        jaccardResults[index]= shortRes;
+        short[] list = {(short) smallerIndex, (short) biggerIndex, shortRes};
+        jaccardResults.add(list);
     }
 
     public double similarity( List<Integer> arg1,  List<Integer> arg2)

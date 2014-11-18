@@ -1,8 +1,8 @@
 package src;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Generates the Jaccard similarity of all feature vectors pairwise, and compares this to
@@ -13,12 +13,12 @@ public class Main {
 	public static final String FILENAME = "tiny_feature_vectors.txt";
 	public static final List<Integer> SKETCH_SIZES = Arrays.asList(16, 32, 64, 128);
   private static final int NUM_THREADS = 4;
-  private static final List<Double> splits = Arrays.asList(1 - Math.sqrt(3) / 2, 1 - Math.sqrt(2) / 2, .5);
+  private static final List<Double> splits = Arrays.asList(0.0, 1 - Math.sqrt(3) / 2, 1 - Math.sqrt(2) / 2, .5, 1.0);
 
 	public static void main(String[] args) {
 
     List<Thread> threads = new ArrayList<Thread>(NUM_THREADS);
-    List<short[]> jaccardResults = new ArrayList<short[]>();
+    List<List<short[]>> jaccardResults = new ArrayList<List<short[]>>(NUM_THREADS);
     double SSE=0;
 		Mapper mapper = null;
 		try {
@@ -34,21 +34,18 @@ public class Main {
 		mapper = null;
 
 		long startTime = System.currentTimeMillis();
-
-    RunJaccard runJaccard1 = new RunJaccard(fVLists, 0, (int) (fVLists.size() * splits.get(0)));
-    RunJaccard runJaccard2 = new RunJaccard(fVLists, (int) (fVLists.size() * splits.get(0)), (int) (fVLists.size() * splits.get(1)));
-    RunJaccard runJaccard3 = new RunJaccard(fVLists, (int) (fVLists.size() * splits.get(1)), (int) (fVLists.size() * splits.get(2)));
-    RunJaccard runJaccard4 = new RunJaccard(fVLists, (int) (fVLists.size() * splits.get(2)), fVLists.size());
+		
+		List<RunJaccard> runJaccards = new ArrayList<RunJaccard>(NUM_THREADS);
+		
+		for (int i = 0; i < NUM_THREADS; ++i) {
+			runJaccards.add(new RunJaccard(fVLists, (int) (fVLists.size() * splits.get(i)), (int) (fVLists.size() * splits.get(i + 1))));
+		}
 
 		// Jaccard comparisons
-    threads.add(new Thread(runJaccard1));
-    threads.get(0).start();
-    threads.add(new Thread(runJaccard2));
-    threads.get(1).start();
-    threads.add(new Thread(runJaccard3));
-    threads.get(2).start();
-    threads.add(new Thread(runJaccard4));
-    threads.get(3).start();
+		for (int k = 0; k < NUM_THREADS; ++k) {
+			threads.add(new Thread(runJaccards.get(k)));
+	    threads.get(k).start();
+		}
 
     try {
         for (Thread thread : threads) {
@@ -58,25 +55,23 @@ public class Main {
         e.printStackTrace();
     }
     
-    jaccardResults.add(runJaccard1.getJaccardResults());
-    jaccardResults.add(runJaccard2.getJaccardResults());
-    jaccardResults.add(runJaccard3.getJaccardResults());
-    jaccardResults.add(runJaccard4.getJaccardResults());
+    for (int j = 0; j < NUM_THREADS; ++j) {
+    	jaccardResults.add(runJaccards.get(j).getJaccardResults());
+    }
 
     threads.clear();
 		
 		System.out.format("Time to generate Jaccard comparisons: %d\n", 
 				(System.currentTimeMillis() - startTime) / 1000);
 		
-		runJaccard1 = null;
-	  runJaccard2 = null;
-	  runJaccard3 = null;
-	  runJaccard4 = null;
+		runJaccards.clear();
 	    
 		Minhasher minhasher;
 		List<List<Integer>> sketch;
+		List<RunCosine> runCosines = new ArrayList<RunCosine>(NUM_THREADS);
 		
 		for (int a : SKETCH_SIZES) {
+			SSE = 0;
 			minhasher = new Minhasher(wordLists, fVLists.size(), a);
 			sketch = minhasher.getSketch();
 			
@@ -84,20 +79,14 @@ public class Main {
 
 			startTime = System.currentTimeMillis();
 			
-      RunCosine runCos1 = new RunCosine(sketch, 0, (int) (sketch.size() * splits.get(0)), jaccardResults.get(1));
-      RunCosine runCos2 = new RunCosine(sketch, (int) (sketch.size() * splits.get(0)), (int) (sketch.size() * splits.get(1)), jaccardResults.get(1));
-      RunCosine runCos3 = new RunCosine(sketch, (int) (sketch.size() * splits.get(1)), (int) (sketch.size() * splits.get(2)), jaccardResults.get(2));
-      RunCosine runCos4 = new RunCosine(sketch, (int) (sketch.size() * splits.get(2)), sketch.size(), jaccardResults.get(3));
+			for (int m = 0; m < NUM_THREADS; ++m) {
+				runCosines.add(new RunCosine(sketch, (int) (sketch.size() * splits.get(m)), (int) (sketch.size() * splits.get(m + 1)), jaccardResults.get(m)));
+			}
 
-      // Cosine Sketch comparisons
-      threads.add(new Thread(runCos1));
-      threads.get(0).start();
-      threads.add(new Thread(runCos2));
-      threads.get(1).start();
-      threads.add(new Thread(runCos3));
-      threads.get(2).start();
-      threads.add(new Thread(runCos4));
-      threads.get(3).start();
+			for (int n = 0; n < NUM_THREADS; ++n) {
+				threads.add(new Thread(runCosines.get(n)));
+	      threads.get(n).start();
+			}
 
       try {
           for (Thread thread : threads) {
@@ -107,8 +96,11 @@ public class Main {
           e.printStackTrace();
       }
 
-      SSE = runCos1.getSumError() + runCos2.getSumError() + runCos3.getSumError() + runCos4.getSumError();
+      for (RunCosine runC : runCosines) {
+      	SSE += runC.getSumError();
+      }
       threads.clear();
+      runCosines.clear();
       
       System.out.format("Time to generate Minhash comparisons: %d\n",
   				(System.currentTimeMillis() - startTime) / 1000);

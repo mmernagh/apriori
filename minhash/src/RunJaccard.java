@@ -12,7 +12,7 @@ public class RunJaccard implements Runnable{
     private int start;
     private int end;
     private List<List<Integer>> fvList;
-    private short[] results;
+    private List<short[]> results;
 
     public RunJaccard(List<List<Integer>> fullSet, int start, int stop){
     	this.start = start;
@@ -27,7 +27,7 @@ public class RunJaccard implements Runnable{
         results = jaccardComparer.getResults();
     }
     
-    public short[] getJaccardResults(){
+    public List<short[]> getJaccardResults(){
     	return results;
     }
 }

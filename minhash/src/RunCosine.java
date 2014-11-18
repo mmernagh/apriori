@@ -12,10 +12,10 @@ public class RunCosine implements Runnable{
    private int start;
    private int end;
    private List<List<Integer>> fvList;
-   private short[] jaccardResults;
+   private List<short[]> jaccardResults;
    private double se;
 
-   public RunCosine(List<List<Integer>> fullSet, int start, int stop, short[] jaccardResult){
+   public RunCosine(List<List<Integer>> fullSet, int start, int stop, List<short[]> jaccardResult){
   	 this.start = start;
   	 this.end = stop;
   	 this.jaccardResults = jaccardResult;
