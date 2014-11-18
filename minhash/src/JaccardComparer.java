@@ -19,7 +19,7 @@ public class JaccardComparer {
         for (int i = start; i < stop; ++i) {
             for (int j = i + 1; j < words.size(); ++j) {
                 result= similarity(words.get(i), words.get(j));
-                if (Double.compare(result, 0.0) > 0) {
+                if (Double.compare(result, 1.0) < 0) {
                   storeResult(result, i, j);
                 }
             }

@@ -23,11 +23,11 @@ public class CosineComparer {
         for (int i = start; i < stop; ++i) {
             for (int j = i + 1; j < words.size(); ++j) {
                 cosine = distance(words.get(i), words.get(j));
-                if (jaccardResult.get(jaccardIndex)[0] == i && jaccardResult.get(jaccardIndex)[1] == j) {
+                if (jaccardIndex < jaccardResult.size() && jaccardResult.get(jaccardIndex)[0] == i && jaccardResult.get(jaccardIndex)[1] == j) {
                   sumSquaredDifference += Math.pow(difference(cosine, jaccardResult.get(jaccardIndex)[2]), 2.0);
                   ++jaccardIndex;
                 } else {
-                  sumSquaredDifference += Math.pow(difference(cosine, Short.MIN_VALUE), 2.0);
+                  sumSquaredDifference += Math.pow(difference(cosine, Short.MAX_VALUE), 2.0);
                 }
             }
         }
