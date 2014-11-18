@@ -21,7 +21,7 @@ public class CosineComparer {
         double cosine;
         int index=0;
         for (int i = start; i < stop; ++i) {
-            for (int j = i + 1; j < stop; ++j) {
+            for (int j = i + 1; j < words.size(); ++j) {
                 cosine = distance(words.get(i), words.get(j));
                 sumSquaredDifference += Math.pow(difference(cosine, jaccardResult[index]), 2.0);
                 //this is assuming that the correct jaccard array is passed to the CosineComparer

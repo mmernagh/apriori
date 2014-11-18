@@ -6,7 +6,7 @@ public class JaccardComparer {
     private short jaccardResults[];
 
     public JaccardComparer(List<List<Integer>> fullSet, int start, int stop){
-        jaccardResults = new short[nChooseTwo(stop - start)];
+        jaccardResults = new short[nChooseTwo(stop - start) * fullSet.size()];
         fillResults(fullSet, start, stop);
     }
     
@@ -21,8 +21,8 @@ public class JaccardComparer {
      private void fillResults(List<List<Integer>> words, int start, int stop) {
         double result;
         int index=0;
-        for (int i = start; i < stop - 1; ++i) {
-            for (int j = i + 1; j < stop; ++j) {
+        for (int i = start; i < stop; ++i) {
+            for (int j = i + 1; j < words.size(); ++j) {
                 result= similarity(words.get(i), words.get(j));
                 storeResult(result,index);
                 index++;
@@ -62,6 +62,6 @@ public class JaccardComparer {
                     i++;
                 }
             }
-            return intersection/union;
+            return 1 - intersection/union;
     }
 }

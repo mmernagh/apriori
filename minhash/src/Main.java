@@ -10,9 +10,10 @@ import java.util.ArrayList;
  */
 public class Main {
 
-	public static final String FILENAME = "feature_vectors.txt";
+	public static final String FILENAME = "tiny_feature_vectors.txt";
 	public static final List<Integer> SKETCH_SIZES = Arrays.asList(16, 32, 64, 128);
   private static final int NUM_THREADS = 4;
+  private static final List<Double> splits = Arrays.asList(1 - Math.sqrt(3) / 2, 1 - Math.sqrt(2) / 2, .5);
 
 	public static void main(String[] args) {
 
@@ -34,10 +35,10 @@ public class Main {
 
 		long startTime = System.currentTimeMillis();
 
-    RunJaccard runJaccard1 = new RunJaccard(fVLists, 0, fVLists.size()*5/32);
-    RunJaccard runJaccard2 = new RunJaccard(fVLists, fVLists.size()*5/32, fVLists.size()*5/16);
-    RunJaccard runJaccard3 = new RunJaccard(fVLists, fVLists.size()*5/16, fVLists.size()/2);
-    RunJaccard runJaccard4 = new RunJaccard(fVLists, fVLists.size()/2, fVLists.size());
+    RunJaccard runJaccard1 = new RunJaccard(fVLists, 0, (int) (fVLists.size() * splits.get(0)));
+    RunJaccard runJaccard2 = new RunJaccard(fVLists, (int) (fVLists.size() * splits.get(0)), (int) (fVLists.size() * splits.get(1)));
+    RunJaccard runJaccard3 = new RunJaccard(fVLists, (int) (fVLists.size() * splits.get(1)), (int) (fVLists.size() * splits.get(2)));
+    RunJaccard runJaccard4 = new RunJaccard(fVLists, (int) (fVLists.size() * splits.get(2)), fVLists.size());
 
 		// Jaccard comparisons
     threads.add(new Thread(runJaccard1));
@@ -83,10 +84,10 @@ public class Main {
 
 			startTime = System.currentTimeMillis();
 			
-      RunCosine runCos1 = new RunCosine(sketch, 0, sketch.size()*5/32, jaccardResults.get(0));
-      RunCosine runCos2 = new RunCosine(sketch, sketch.size()*5/32, sketch.size()*5/16, jaccardResults.get(1));
-      RunCosine runCos3 = new RunCosine(sketch, sketch.size()*5/16, sketch.size()/2, jaccardResults.get(2));
-      RunCosine runCos4 = new RunCosine(sketch, sketch.size()/2, sketch.size(), jaccardResults.get(3));
+      RunCosine runCos1 = new RunCosine(sketch, 0, (int) (sketch.size() * splits.get(0)), jaccardResults.get(1));
+      RunCosine runCos2 = new RunCosine(sketch, (int) (sketch.size() * splits.get(0)), (int) (sketch.size() * splits.get(1)), jaccardResults.get(1));
+      RunCosine runCos3 = new RunCosine(sketch, (int) (sketch.size() * splits.get(1)), (int) (sketch.size() * splits.get(2)), jaccardResults.get(2));
+      RunCosine runCos4 = new RunCosine(sketch, (int) (sketch.size() * splits.get(2)), sketch.size(), jaccardResults.get(3));
 
       // Cosine Sketch comparisons
       threads.add(new Thread(runCos1));
