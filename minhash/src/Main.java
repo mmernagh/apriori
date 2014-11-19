@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class Main {
 
-	public static final String FILENAME = "tiny_feature_vectors.txt";
+	public static final String FILENAME = "feature_vectors.txt";
 	public static final List<Integer> SKETCH_SIZES = Arrays.asList(16, 32, 64, 128);
   private static final int NUM_THREADS = 4;
   private static final List<Double> splits = Arrays.asList(0.0, 1 - Math.sqrt(3) / 2, 1 - Math.sqrt(2) / 2, .5, 1.0);
@@ -19,7 +19,7 @@ public class Main {
 
     List<Thread> threads = new ArrayList<Thread>(NUM_THREADS);
     List<List<short[]>> jaccardResults = new ArrayList<List<short[]>>(NUM_THREADS);
-    double SSE=0;
+    double SSE = 0;
 		Mapper mapper = null;
 		try {
 			mapper = new Mapper(FILENAME);
@@ -102,7 +102,7 @@ public class Main {
       threads.clear();
       runCosines.clear();
       
-      System.out.format("Time to generate Minhash comparisons: %d\n",
+      System.out.format("Time to generate Minhash comparison %d: %d\n", a,
   				(System.currentTimeMillis() - startTime) / 1000);
 
       // Now do a master comparison of the jaccard results and the cosine sketch results

@@ -23,9 +23,7 @@ public class RunCosine implements Runnable{
    }
 
     public void run() {
-        long startTime = System.nanoTime();
         cosineComparer = new CosineComparer(fvList, start, end, jaccardResults);
-        System.out.format("Total time for cosine(s): %d s\n", (System.nanoTime() - startTime) / 1000000000);
         se = cosineComparer.getSumSquaredDiff();
     }
     

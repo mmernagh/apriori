@@ -27,7 +27,7 @@ public class CosineComparer {
                   sumSquaredDifference += Math.pow(difference(cosine, jaccardResult.get(jaccardIndex)[2]), 2.0);
                   ++jaccardIndex;
                 } else {
-                  sumSquaredDifference += Math.pow(difference(cosine, Short.MAX_VALUE), 2.0);
+                  sumSquaredDifference += Math.pow(difference(cosine, Short.MIN_VALUE), 2.0);
                 }
             }
         }
@@ -41,21 +41,15 @@ public class CosineComparer {
 
     public double distance( List<Integer> arg1,  List<Integer> arg2)
     {
-        double distance =0;
-        double normA, normB;
-        normA = 0;
-        normB = 0;
-
-        for (int i = 0; i <arg1.size(); i++)
-        {
-            double diff= Math.abs(arg1.get(i)-arg2.get(i));
-            normA += Math.pow(arg1.get(i),2);
-            normB += Math.pow(arg2.get(i), 2);
-            distance += diff*diff;
-        }
-        distance = distance/Math.sqrt(normA)/Math.sqrt(normB);
-        distance = 1-distance;
-
-        return distance;
+    	int denom = arg1.size() * 2;
+    	int numerator = 0;
+    	for (int i = 0; i < arg1.size(); ++i) {
+    		if (arg1.get(i) == arg2.get(i)) {
+    			++numerator;
+    			--denom;
+    		}
+    	}
+    	
+    	return (double) numerator / denom;
     }
 }

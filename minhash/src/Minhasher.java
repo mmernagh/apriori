@@ -66,7 +66,7 @@ public class Minhasher {
 	private List<Integer> hash(int i) {
 		List<Integer> hashes = new ArrayList<Integer>(hashSeed.size());
 		for (int a = 0; a < hashSeed.size(); ++a) {
-			hashes.add(hashSeed.get(a) ^ i);
+			hashes.add((hashSeed.get(a) ^ i));
 		}
 		return hashes;
 	}

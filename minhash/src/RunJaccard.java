@@ -21,9 +21,7 @@ public class RunJaccard implements Runnable{
     }
 
     public void run() {
-        long startTime = System.nanoTime();
         jaccardComparer = new JaccardComparer(fvList, start, end);
-        System.out.format("Total time for Jaccard (s): %d s\n", (System.nanoTime() - startTime) / 1000000000);
         results = jaccardComparer.getResults();
     }
     
