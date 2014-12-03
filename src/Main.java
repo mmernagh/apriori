@@ -1,3 +1,5 @@
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -33,15 +35,18 @@ public class Main {
 		}
 
 		List<Transaction> fvTransactions = fvParser.transactions();
+		Set<Short> allClassIndices = fvParser.classIndices();
 		Instances instances = fvParser.instances();
 		int mostFrequentClass = fvParser.mostFrequentClassIndex();
 		
 		long allTime = System.currentTimeMillis();
+		printTrans(fvTransactions, allClassIndices);
+		String outFile = "all_apriori.txt";
 		
 		// Generate apriori rules for entire feature vector set
 		ExecutorService aruleExec = Executors.newSingleThreadExecutor();
 		Callable<List<Transaction>> aruleCallable = new ARules<List<Transaction>>(
-				ALL_TRANS, CLASS_EXCL, SUPPORT, CONFIDENCE, null);
+				ALL_TRANS, CLASS_EXCL, outFile, SUPPORT, CONFIDENCE);
 		Future<List<Transaction>> aruleFuture = aruleExec.submit(aruleCallable);
 		List<Transaction> arules = null;
 		try {
@@ -100,6 +105,7 @@ public class Main {
 			}
 			List<String> transactionFileNames = new ArrayList<String>(size);
 			List<String> classFileNames = new ArrayList<String>(size);
+			List<String> outFileNames = new ArrayList<String>(size); // TODO: fill
 			List<Integer> defaultIndices = new ArrayList<Integer>(size);
 			
 			// Print clusters to respective results and get lists of clusters
@@ -111,7 +117,7 @@ public class Main {
 			Set<Future<List<Transaction>>> clFutures = new HashSet<Future<List<Transaction>>>(size);
 			for (int p = 0; p < size; ++p) {
 				Callable<List<Transaction>> clAruleCallable = new ARules<List<Transaction>>(
-						transactionFileNames.get(p), classFileNames.get(p), SUPPORT, CONFIDENCE, clusterIndices.get(p));
+						transactionFileNames.get(p), classFileNames.get(p), outFileNames.get(p), SUPPORT, CONFIDENCE);
 				Future<List<Transaction>> clAruleFuture = clAruleExec.submit(clAruleCallable);
 				clFutures.add(clAruleFuture);
 			}
@@ -154,4 +160,30 @@ public class Main {
 		}
 	}
 
+	public static void printTrans(List<Transaction> trans, Set<Short> classes) {
+		PrintWriter transFile = null;
+		PrintWriter labelFile = null;
+		try {
+			transFile = new PrintWriter(ALL_TRANS);
+			labelFile = new PrintWriter(CLASS_EXCL);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		// Prints the transactions file for generating apriori rules
+		for (Transaction t : trans) {
+			for (short s : t.attributes()) {
+				transFile.print(s + " ");
+			}
+			transFile.println(t.classIndex());
+		}
+		transFile.close();
+		
+		// Specifies that any labels not mentioned should only be used as rule antecedents
+		labelFile.println("in");
+		for (short i : classes) {
+			labelFile.println(i + " out");
+		}
+		labelFile.close();
+	}
 }

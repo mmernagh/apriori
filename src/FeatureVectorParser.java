@@ -2,8 +2,10 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import weka.core.Attribute;
 import weka.core.BinarySparseInstance;
@@ -43,6 +45,10 @@ public class FeatureVectorParser {
 	
 	public List<Transaction> transactions() {
 		return transactions;
+	}
+	
+	public Set<Short> classIndices() {
+		return new HashSet<Short>(topicIndices.values());
 	}
 	
 	public int mostFrequentClassIndex() {
