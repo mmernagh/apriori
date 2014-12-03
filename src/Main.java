@@ -25,6 +25,7 @@ public class Main {
 	
 	public static void main(String[] args) {
 		
+		// Parse feature vector file
 		FVParser fvParser = null;
 		try {
 			fvParser = new FVParser(FEATURE_VECTORS);
@@ -33,16 +34,30 @@ public class Main {
 		}
 
 		List<Transaction> fvTransactions = fvParser.transactions();
-		List<Short> classIndices = fvParser.classIndices();
+		// List<Short> classIndices = fvParser.classIndices();
 		Instances instances = fvParser.instances();
 		
 		long allTime = System.currentTimeMillis();
-		List<Transaction> arules = ARules.rules(ALL_TRANS, CLASS_EXCL, SUPPORT, CONFIDENCE);
 		
+		// Generate apriori rules for entire feature vector set
+		ExecutorService aruleExec = Executors.newSingleThreadExecutor();
+		Callable<List<Transaction>> aruleCallable = new ARules<List<Transaction>>(ALL_TRANS, CLASS_EXCL, SUPPORT, CONFIDENCE, null);
+		Future<List<Transaction>> aruleFuture = aruleExec.submit(aruleCallable);
+		List<Transaction> arules = null;
+		try {
+			arules = aruleFuture.get();
+		} catch (InterruptedException e2) {
+			e2.printStackTrace();
+		} catch (ExecutionException e2) {
+			e2.printStackTrace();
+		}
+		
+		// Evaluate apriori rules
 		ExecutorService evalAllExecutor = Executors.newFixedThreadPool(NUM_THREADS);
 		Set<Future<Double>> evalAllFutures = new HashSet<Future<Double>>(NUM_THREADS);
 		for (int i = 0; i < NUM_THREADS; ++i) {
-			Callable<Double> callable = new Evaluator<Double>(fvTransactions, arules, i * fvTransactions.size() / NUM_THREADS, (i + 1) * fvTransactions.size() / NUM_THREADS);
+			Callable<Double> callable = new Evaluator<Double>(fvTransactions, arules, 
+					i * fvTransactions.size() / NUM_THREADS, (i + 1) * fvTransactions.size() / NUM_THREADS);
 			Future<Double> future = evalAllExecutor.submit(callable);
 			evalAllFutures.add(future);
 		}
@@ -57,8 +72,10 @@ public class Main {
 				e.printStackTrace();
 			}
 		}
-		allTime = System.currentTimeMillis() - allTime;
+		System.out.println("Time for entire doc (ms): " + (System.currentTimeMillis() - allTime));
+		System.out.format("Accuracy for entire doc: %.4f\n", allRulesAccuracy);
 		
+		// Cluster and then create rules
 		List<SimpleKMeans> kMeans = new ArrayList<SimpleKMeans>(2);
 		kMeans.add(new SimpleKMeans());
 		kMeans.add(new SimpleKMeans());
@@ -66,8 +83,7 @@ public class Main {
 		for (int i = 0; i < 2; ++i) {
 			SimpleKMeans k = kMeans.get(i);
 			int size = (i + 1) * 8;
-			// TODO: customize clusterer
-			
+			// TODO: customize clusterer			
 			long time = System.currentTimeMillis();
 			try {
 				k.buildClusterer(instances);
@@ -75,10 +91,47 @@ public class Main {
 				e.printStackTrace();
 			}
 			
+			// Create rules
+			int[] assignments = {};
+			try {
+				assignments = k.getAssignments();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+			List<String> transactionFileNames = new ArrayList<String>(size);
+			List<String> classFileNames = new ArrayList<String>(size);
+			
+			// Print clusters to respective results and get lists of clusters
+			List<List<Short>> clusterIndices = ClusterPrinter.print(assignments, fvTransactions, 
+						transactionFileNames, classFileNames, size);
+						
+			// Generate apriori rules for each cluster
+			ExecutorService clAruleExec = Executors.newFixedThreadPool(NUM_THREADS);
+			Set<Future<List<Transaction>>> clFutures = new HashSet<Future<List<Transaction>>>(size);
+			for (int p = 0; p < size; ++p) {
+				Callable<List<Transaction>> clAruleCallable = new ARules<List<Transaction>>(
+						transactionFileNames.get(p), classFileNames.get(p), SUPPORT, CONFIDENCE, clusterIndices.get(p));
+				Future<List<Transaction>> clAruleFuture = clAruleExec.submit(clAruleCallable);
+				clFutures.add(clAruleFuture);
+			}
+			
+			List<List<Transaction>> clArules = new ArrayList<List<Transaction>>(size);
+			for (Future<List<Transaction>> f : clFutures) {
+				try {
+					clArules.add(f.get());
+				} catch (InterruptedException e2) {
+					e2.printStackTrace();
+				} catch (ExecutionException e2) {
+					e2.printStackTrace();
+				}
+			}
+			
+			// Evaluate apriori rules for each cluster
 			ExecutorService exec = Executors.newFixedThreadPool(NUM_THREADS);
 			Set<Future<Double>> futures = new HashSet<Future<Double>>(size);
 			for (int j = 0; j < size; ++j) {
-				Callable<Double> callable = new Evaluator<Double>(fvTransactions, arules, j * fvTransactions.size() / size, (j + 1) * fvTransactions.size() / size);
+				Callable<Double> callable = new Evaluator<Double>(fvTransactions, clArules.get(j), 
+						j * fvTransactions.size() / size, (j + 1) * fvTransactions.size() / size);
 				Future<Double> future = exec.submit(callable);
 				futures.add(future);
 			}
@@ -96,7 +149,7 @@ public class Main {
 			
 			System.out.println("Cluster size: " + size);
 			System.out.println("Time (ms): " + (System.currentTimeMillis() - time));
-			System.out.format("Accuracy: %.2f\n", acc);
+			System.out.format("Accuracy: %.4f\n", acc);
 		}
 	}
 

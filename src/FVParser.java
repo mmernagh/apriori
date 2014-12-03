@@ -20,7 +20,7 @@ public class FVParser {
 	
 	private Map<String, Integer> attributeIndices = new HashMap<String, Integer>();
 	private ArrayList<Attribute> attributes = new ArrayList<Attribute>();
-	private List<Transaction> records = new ArrayList<Transaction>();
+	private List<Transaction> transactions = new ArrayList<Transaction>();
 	private List<Short> classIndices = new ArrayList<Short>();
 	
 	private Transaction activeRecord;
@@ -35,7 +35,7 @@ public class FVParser {
 	}
 	
 	public List<Transaction> transactions() {
-		return records;
+		return transactions;
 	}
 	
 	public List<Short> classIndices() {
@@ -81,7 +81,7 @@ public class FVParser {
   	end = line.indexOf('<', start + 1);
   	parseNominalValue(line.substring(start + 2, end));
   	
-  	records.add(activeRecord);
+  	transactions.add(activeRecord);
   }
   	
   private int skipTags(int start, String line, int tagsToSkip) {
@@ -131,9 +131,9 @@ public class FVParser {
 	}
 	
 	private void initInstances() {
-		instances = new Instances("Data", attributes, records.size());
+		instances = new Instances("Data", attributes, transactions.size());
 		
-		for (Transaction record : records) {
+		for (Transaction record : transactions) {
 			addRecord(record);
 		}
 	}

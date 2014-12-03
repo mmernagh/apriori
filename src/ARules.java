@@ -1,15 +1,17 @@
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * ARules creates associative rules for a given list of {@link Transaction}s.
  */
-public class ARules {
+public class ARules<V> implements Callable<List<Transaction>> {
 	
-	private ARules() {
-		// Intentionally left blank.
+	public ARules(String transFile, String classFile, double support, double confidence, List<Short> indices) {
+		// TODO: indices is nullable
 	}
-	
-	public static List<Transaction> rules(String transFile, String classFile, double support, double confidence) {
+
+	@Override
+	public List<Transaction> call() throws Exception {
 		return null;
 	}
 }
