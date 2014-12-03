@@ -61,7 +61,7 @@ public class Main {
 		ExecutorService evalAllExecutor = Executors.newFixedThreadPool(NUM_THREADS);
 		Set<Future<Double>> evalAllFutures = new HashSet<Future<Double>>(NUM_THREADS);
 		for (int i = 0; i < NUM_THREADS; ++i) {
-			Callable<Double> callable = new Evaluator<Double>(fvTransactions, arules, 
+			Callable<Double> callable = new Evaluator<Double>(fvTransactions, arules, null,
 					i * fvTransactions.size() / NUM_THREADS, (i + 1) * fvTransactions.size() / NUM_THREADS, mostFrequentClass);
 			Future<Double> future = evalAllExecutor.submit(callable);
 			evalAllFutures.add(future);
@@ -137,7 +137,7 @@ public class Main {
 			ExecutorService exec = Executors.newFixedThreadPool(NUM_THREADS);
 			Set<Future<Double>> futures = new HashSet<Future<Double>>(size);
 			for (int j = 0; j < size; ++j) {
-				Callable<Double> callable = new Evaluator<Double>(fvTransactions, clArules.get(j), 
+				Callable<Double> callable = new Evaluator<Double>(fvTransactions, clArules.get(j), clusterIndices.get(j), 
 						j * fvTransactions.size() / size, (j + 1) * fvTransactions.size() / size, defaultIndices.get(j));
 				Future<Double> future = exec.submit(callable);
 				futures.add(future);
@@ -172,10 +172,12 @@ public class Main {
 		
 		// Prints the transactions file for generating apriori rules
 		for (Transaction t : trans) {
-			for (short s : t.attributes()) {
-				transFile.print(s + " ");
+			for (short l : t.classLabels()) {
+				for (short s : t.attributes()) {
+					transFile.print(s + " ");
+				}
+				transFile.println(l);
 			}
-			transFile.println(t.classIndex());
 		}
 		transFile.close();
 		

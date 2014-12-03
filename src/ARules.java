@@ -67,14 +67,14 @@ public class ARules<V> implements Callable<List<Transaction>> {
 		String[] words = line.split("[: ]");
 		if (words.length > 0) {
 			if (!words[0].startsWith("(")) {
-				t.setClassIndex(Short.parseShort(words[0]));
+				t.addClassIndex(Short.parseShort(words[0]));
 			}
 			int i = 1;
 			while (i < words.length && !words[i].startsWith("(")) {
 				t.addIndex(Short.parseShort(words[i++]));
 			}
 		}
-		t.sortAttributes();
+		t.sortLists();
 		return t;
 	}
 }

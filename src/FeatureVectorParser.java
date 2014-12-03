@@ -153,6 +153,7 @@ public class FeatureVectorParser {
 			for (String topic : split) {
 				addTopic(topic);
 			}
+			transactions.add(transaction);
 	  	attributeIndices.putAll(transAttributeIndices);
 	  	attributes.addAll(transactionAttributes);
 		}
@@ -169,17 +170,15 @@ public class FeatureVectorParser {
 	 * @param topic The map key.
 	 */
 	private void addTopic(String topic) {
-		Transaction t = new Transaction(transaction);
 		if (topicIndices.containsKey(topic)) {
-			t.setClassIndex(topicIndices.get(topic));
+			transaction.addClassIndex(topicIndices.get(topic));
 			topicCount.put(topic, topicCount.get(topic) + 1);
 		} else {
 			short index = (short) (-1 * (topicIndices.size() + 1));
 			topicIndices.put(topic, index);
 			topicCount.put(topic, 0);
-			t.setClassIndex(index);
+			transaction.addClassIndex(index);
 		}
-		transactions.add(t);
 	}
 	
 	private void initInstances() {
@@ -190,8 +189,8 @@ public class FeatureVectorParser {
 	}
 	
 	private void addTransaction(Transaction trans) {
-		if (trans.attributes().length > 0 && trans.classIndex() < 0) {
-			trans.sortAttributes();
+		if (trans.attributes().length > 0 && trans.classLabels().size() > 0) {
+			trans.sortLists();
 			int[] indices = new int[trans.attributes().length];
 			for (int i = 0; i < trans.attributes().length; ++i) {
 				indices[i] = trans.attributes()[i];
