@@ -11,7 +11,6 @@ import java.util.concurrent.Future;
 import weka.clusterers.SimpleKMeans;
 import weka.core.Instances;
 
-
 public class Main {
 
 	public static final String FEATURE_VECTORS = "feature_vectors.txt";
@@ -26,22 +25,23 @@ public class Main {
 	public static void main(String[] args) {
 		
 		// Parse feature vector file
-		FVParser fvParser = null;
+		FeatureVectorParser fvParser = null;
 		try {
-			fvParser = new FVParser(FEATURE_VECTORS);
+			fvParser = new FeatureVectorParser(FEATURE_VECTORS);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 		List<Transaction> fvTransactions = fvParser.transactions();
-		// List<Short> classIndices = fvParser.classIndices();
 		Instances instances = fvParser.instances();
+		int mostFrequentClass = fvParser.mostFrequentClassIndex();
 		
 		long allTime = System.currentTimeMillis();
 		
 		// Generate apriori rules for entire feature vector set
 		ExecutorService aruleExec = Executors.newSingleThreadExecutor();
-		Callable<List<Transaction>> aruleCallable = new ARules<List<Transaction>>(ALL_TRANS, CLASS_EXCL, SUPPORT, CONFIDENCE, null);
+		Callable<List<Transaction>> aruleCallable = new ARules<List<Transaction>>(
+				ALL_TRANS, CLASS_EXCL, SUPPORT, CONFIDENCE, null);
 		Future<List<Transaction>> aruleFuture = aruleExec.submit(aruleCallable);
 		List<Transaction> arules = null;
 		try {
@@ -57,7 +57,7 @@ public class Main {
 		Set<Future<Double>> evalAllFutures = new HashSet<Future<Double>>(NUM_THREADS);
 		for (int i = 0; i < NUM_THREADS; ++i) {
 			Callable<Double> callable = new Evaluator<Double>(fvTransactions, arules, 
-					i * fvTransactions.size() / NUM_THREADS, (i + 1) * fvTransactions.size() / NUM_THREADS);
+					i * fvTransactions.size() / NUM_THREADS, (i + 1) * fvTransactions.size() / NUM_THREADS, mostFrequentClass);
 			Future<Double> future = evalAllExecutor.submit(callable);
 			evalAllFutures.add(future);
 		}
@@ -100,10 +100,11 @@ public class Main {
 			}
 			List<String> transactionFileNames = new ArrayList<String>(size);
 			List<String> classFileNames = new ArrayList<String>(size);
+			List<Integer> defaultIndices = new ArrayList<Integer>(size);
 			
 			// Print clusters to respective results and get lists of clusters
 			List<List<Short>> clusterIndices = ClusterPrinter.print(assignments, fvTransactions, 
-						transactionFileNames, classFileNames, size);
+						transactionFileNames, classFileNames, size, defaultIndices);
 						
 			// Generate apriori rules for each cluster
 			ExecutorService clAruleExec = Executors.newFixedThreadPool(NUM_THREADS);
@@ -131,7 +132,7 @@ public class Main {
 			Set<Future<Double>> futures = new HashSet<Future<Double>>(size);
 			for (int j = 0; j < size; ++j) {
 				Callable<Double> callable = new Evaluator<Double>(fvTransactions, clArules.get(j), 
-						j * fvTransactions.size() / size, (j + 1) * fvTransactions.size() / size);
+						j * fvTransactions.size() / size, (j + 1) * fvTransactions.size() / size, defaultIndices.get(j));
 				Future<Double> future = exec.submit(callable);
 				futures.add(future);
 			}

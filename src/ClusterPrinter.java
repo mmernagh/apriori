@@ -8,7 +8,7 @@ public class ClusterPrinter {
 	}
 
 	public static List<List<Short>> print(int[] assignments, List<Transaction> fvTransactions, 
-			List<String> tNames, List<String> cNames, int size) {
+			List<String> tNames, List<String> cNames, int size, List<Integer> defaultIndices) {
 		return null;
 	}
 }
