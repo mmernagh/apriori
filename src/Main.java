@@ -88,7 +88,14 @@ public class Main {
 		for (int i = 0; i < 2; ++i) {
 			SimpleKMeans k = kMeans.get(i);
 			int size = (i + 1) * 8;
-			// TODO: customize clusterer			
+			try {
+				k.setNumClusters(size);
+			} catch (Exception e3) {
+				e3.printStackTrace();
+			}
+			k.setPreserveInstancesOrder(false);
+			k.setNumExecutionSlots(NUM_THREADS);
+			
 			long time = System.currentTimeMillis();
 			try {
 				k.buildClusterer(instances);
@@ -103,14 +110,14 @@ public class Main {
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
-			List<String> transactionFileNames = new ArrayList<String>(size);
-			List<String> classFileNames = new ArrayList<String>(size);
-			List<String> outFileNames = new ArrayList<String>(size); // TODO: fill
+			List<String> transactionFileNames = generateList(size, "trans_" + size + "_");
+			List<String> classFileNames = generateList(size, "label_" + size + "_");
+			List<String> outFileNames = generateList(size, "output_" + size + "_");
 			List<Integer> defaultIndices = new ArrayList<Integer>(size);
 			
 			// Print clusters to respective results and get lists of clusters
 			List<List<Short>> clusterIndices = ClusterPrinter.print(assignments, fvTransactions, 
-						transactionFileNames, classFileNames, size, defaultIndices);
+						size, defaultIndices);
 						
 			// Generate apriori rules for each cluster
 			ExecutorService clAruleExec = Executors.newFixedThreadPool(NUM_THREADS);
@@ -187,5 +194,21 @@ public class Main {
 			labelFile.println(i + " out");
 		}
 		labelFile.close();
+	}
+	
+	
+	/**
+	 * Helper method that fills a list with names.
+	 * 
+	 * @param list The list 
+	 * @param size Size
+	 * @param baseName
+ 	 */
+	private static List<String> generateList(int size, String baseName) {
+		List<String> list = new ArrayList<String>(size);
+		for (int i = 0; i < size; ++i) {
+			list.set(i, baseName + (i + 1) + ".txt");
+		}
+		return list;
 	}
 }
